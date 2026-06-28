@@ -1,0 +1,21 @@
+# Node / Expo
+node_modules/
+.expo/
+dist/
+npm-debug.*
+*.log
+
+# .NET
+bin/
+obj/
+*.user
+
+# Env / secrets
+.env
+*.local
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
