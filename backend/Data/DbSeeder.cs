@@ -19,57 +19,67 @@ public static class DbSeeder
         {
             Name = "Skyview Residence",
             Address = "123 Jalan Skyview, Kuala Lumpur",
+            ContactEmail = "management@skyview.my",
+            ContactPhone = "+60-3-1234-5678",
         };
 
-        var unitA = new Unit { UnitNumber = "A-01-01", Property = property };
-        var unitB = new Unit { UnitNumber = "A-01-02", Property = property };
+        var unitA = new Unit { UnitNumber = "A-01-01", Floor = 1, Type = "3-Bedroom", IsActive = true, Property = property };
+        var unitB = new Unit { UnitNumber = "A-01-02", Floor = 1, Type = "2-Bedroom", IsActive = true, Property = property };
 
-        var accountA = new Account { Unit = unitA, Balance = 350.00m };
-        var accountB = new Account { Unit = unitB, Balance = 0m };
+        var accountA = new Account { CumulativeArrears = 350.00m, CreditBalance = 0m };
+        var accountB = new Account { CumulativeArrears = 0m, CreditBalance = 0m };
 
         var residentA = new Resident
         {
             Unit = unitA,
-            FullName = "Alice Tan",
+            Account = accountA,
             Email = "alice.tan@example.com",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(TestPassword),
-            Phone = "012-3456789",
+            Name = "Alice Tan",
+            PhoneNumber = "012-3456789",
+            NotificationPreferences = "{}",
             IsActive = true,
         };
 
         var residentB = new Resident
         {
             Unit = unitB,
-            FullName = "Benjamin Lee",
+            Account = accountB,
             Email = "benjamin.lee@example.com",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(TestPassword),
-            Phone = "012-9876543",
+            Name = "Benjamin Lee",
+            PhoneNumber = "012-9876543",
+            NotificationPreferences = "{}",
             IsActive = true,
         };
 
         var juneBill = new Bill
         {
-            Account = accountA,
-            BillingPeriodStart = new DateTime(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc),
-            BillingPeriodEnd = new DateTime(2026, 6, 30, 0, 0, 0, DateTimeKind.Utc),
-            DueDate = new DateTime(2026, 7, 15, 0, 0, 0, DateTimeKind.Utc),
+            Unit = unitA,
+            BillingPeriod = "2026-06",
+            ReferenceNumber = "SKV-2026-06-A0101",
+            IssueDate = new DateTime(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc),
             TotalAmount = 350.00m,
+            OutstandingBalance = 350.00m,
             Status = "Pending",
+            DueDate = new DateTime(2026, 7, 15, 0, 0, 0, DateTimeKind.Utc),
         };
-        juneBill.BillLineItems.Add(new BillLineItem { Description = "Maintenance Fee", Amount = 300.00m });
-        juneBill.BillLineItems.Add(new BillLineItem { Description = "Sinking Fund", Amount = 50.00m });
+        juneBill.BillLineItems.Add(new BillLineItem { Description = "Maintenance Fee", Amount = 300.00m, LineItemType = "Charge" });
+        juneBill.BillLineItems.Add(new BillLineItem { Description = "Sinking Fund", Amount = 50.00m, LineItemType = "Charge" });
 
         var mayBill = new Bill
         {
-            Account = accountA,
-            BillingPeriodStart = new DateTime(2026, 5, 1, 0, 0, 0, DateTimeKind.Utc),
-            BillingPeriodEnd = new DateTime(2026, 5, 31, 0, 0, 0, DateTimeKind.Utc),
-            DueDate = new DateTime(2026, 6, 15, 0, 0, 0, DateTimeKind.Utc),
+            Unit = unitA,
+            BillingPeriod = "2026-05",
+            ReferenceNumber = "SKV-2026-05-A0101",
+            IssueDate = new DateTime(2026, 5, 1, 0, 0, 0, DateTimeKind.Utc),
             TotalAmount = 350.00m,
+            OutstandingBalance = 0.00m,
             Status = "Paid",
+            DueDate = new DateTime(2026, 6, 15, 0, 0, 0, DateTimeKind.Utc),
         };
-        mayBill.BillLineItems.Add(new BillLineItem { Description = "Maintenance Fee", Amount = 300.00m });
-        mayBill.BillLineItems.Add(new BillLineItem { Description = "Sinking Fund", Amount = 50.00m });
+        mayBill.BillLineItems.Add(new BillLineItem { Description = "Maintenance Fee", Amount = 300.00m, LineItemType = "Charge" });
+        mayBill.BillLineItems.Add(new BillLineItem { Description = "Sinking Fund", Amount = 50.00m, LineItemType = "Charge" });
 
         context.Properties.Add(property);
         context.Residents.AddRange(residentA, residentB);

@@ -1,6 +1,6 @@
 namespace PropertyBill.Api.Models;
 
-// Admin-owned: per-unit override of a BillingItem's rate (e.g. by unit size/type).
+// Admin-owned: per-unit override of a BillingItem's default rate (e.g. by unit size/type).
 public class UnitBillingRate
 {
     public int UnitBillingRateId { get; set; }

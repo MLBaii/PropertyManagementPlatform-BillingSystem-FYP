@@ -33,7 +33,7 @@ public class AuthService : IAuthService
         {
             Token = token,
             ResidentId = resident.ResidentId,
-            FullName = resident.FullName,
+            FullName = resident.Name,
             Email = resident.Email,
             UnitId = resident.UnitId,
         });

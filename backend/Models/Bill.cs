@@ -3,16 +3,17 @@ namespace PropertyBill.Api.Models;
 public class Bill
 {
     public int BillId { get; set; }
-    public int AccountId { get; set; }
-    public DateTime BillingPeriodStart { get; set; }
-    public DateTime BillingPeriodEnd { get; set; }
-    public DateTime DueDate { get; set; }
+    public int UnitId { get; set; }
+    public string BillingPeriod { get; set; } = string.Empty;
+    public string ReferenceNumber { get; set; } = string.Empty;
+    public DateTime IssueDate { get; set; }
     public decimal TotalAmount { get; set; }
+    public decimal OutstandingBalance { get; set; }
     public string Status { get; set; } = "Pending";
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime DueDate { get; set; }
 
-    public Account Account { get; set; } = null!;
+    public Unit Unit { get; set; } = null!;
     public ICollection<BillLineItem> BillLineItems { get; set; } = new List<BillLineItem>();
-    public ICollection<PaymentProof> PaymentProofs { get; set; } = new List<PaymentProof>();
+    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
     public ICollection<Dispute> Disputes { get; set; } = new List<Dispute>();
 }

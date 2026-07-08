@@ -1,14 +1,13 @@
 namespace PropertyBill.Api.Models;
 
-// Corrected per docs/SCHEMA.md: Account links to Unit, not Resident.
+// Per the Chapter 4 ERD, Account is keyed off Resident (Resident.AccountId), not Unit —
+// it tracks one resident's running arrears/credit balance rather than a per-unit ledger.
 public class Account
 {
     public int AccountId { get; set; }
-    public int UnitId { get; set; }
-    public decimal Balance { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public decimal CumulativeArrears { get; set; }
+    public decimal CreditBalance { get; set; }
+    public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
 
-    public Unit Unit { get; set; } = null!;
-    public ICollection<Bill> Bills { get; set; } = new List<Bill>();
-    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
+    public Resident? Resident { get; set; }
 }

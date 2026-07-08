@@ -19,10 +19,12 @@ public class BillService : IBillService
         return bills.Select(b => new BillDto
         {
             BillId = b.BillId,
-            BillingPeriodStart = b.BillingPeriodStart,
-            BillingPeriodEnd = b.BillingPeriodEnd,
+            ReferenceNumber = b.ReferenceNumber,
+            BillingPeriod = b.BillingPeriod,
+            IssueDate = b.IssueDate,
             DueDate = b.DueDate,
             TotalAmount = b.TotalAmount,
+            OutstandingBalance = b.OutstandingBalance,
             Status = b.Status,
         }).ToList();
     }

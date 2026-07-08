@@ -30,19 +30,16 @@ namespace PropertyBill.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AccountId"));
 
-                    b.Property<decimal>("Balance")
+                    b.Property<decimal>("CreditBalance")
                         .HasColumnType("numeric");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<decimal>("CumulativeArrears")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("LastUpdated")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UnitId")
-                        .HasColumnType("integer");
-
                     b.HasKey("AccountId");
-
-                    b.HasIndex("UnitId")
-                        .IsUnique();
 
                     b.ToTable("Accounts");
                 });
@@ -62,10 +59,6 @@ namespace PropertyBill.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
@@ -74,9 +67,16 @@ namespace PropertyBill.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("AdminUserId");
 
                     b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Username")
                         .IsUnique();
 
                     b.ToTable("AdminUsers");
@@ -90,14 +90,21 @@ namespace PropertyBill.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AuditLogId"));
 
-                    b.Property<string>("Action")
+                    b.Property<string>("ActionType")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("AdminUserId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Details")
+                    b.Property<string>("AffectedEntity")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("AffectedEntityId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("Timestamp")
@@ -118,20 +125,22 @@ namespace PropertyBill.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("BillId"));
 
-                    b.Property<int>("AccountId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("BillingPeriodEnd")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("BillingPeriodStart")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("BillingPeriod")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("IssueDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("OutstandingBalance")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("ReferenceNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -140,20 +149,26 @@ namespace PropertyBill.Api.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("numeric");
 
+                    b.Property<int>("UnitId")
+                        .HasColumnType("integer");
+
                     b.HasKey("BillId");
 
-                    b.HasIndex("AccountId");
+                    b.HasIndex("ReferenceNumber")
+                        .IsUnique();
+
+                    b.HasIndex("UnitId");
 
                     b.ToTable("Bills");
                 });
 
             modelBuilder.Entity("PropertyBill.Api.Models.BillLineItem", b =>
                 {
-                    b.Property<int>("BillLineItemId")
+                    b.Property<int>("LineItemId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("BillLineItemId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LineItemId"));
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
@@ -168,7 +183,11 @@ namespace PropertyBill.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("BillLineItemId");
+                    b.Property<string>("LineItemType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("LineItemId");
 
                     b.HasIndex("BillId");
 
@@ -185,17 +204,38 @@ namespace PropertyBill.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("BillingItemId"));
 
-                    b.Property<decimal>("DefaultAmount")
-                        .HasColumnType("numeric");
+                    b.Property<int>("BillingDay")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
+                    b.Property<string>("ChargeType")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<decimal>("DefaultRate")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("DueDay")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Frequency")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("GracePeriodDays")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("PenaltyRate")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("PropertyId")
+                        .HasColumnType("integer");
+
                     b.HasKey("BillingItemId");
+
+                    b.HasIndex("PropertyId");
 
                     b.ToTable("BillingItems");
                 });
@@ -211,12 +251,12 @@ namespace PropertyBill.Api.Migrations
                     b.Property<int>("BillId")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("Reason")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("ResidentId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("ResolvedAt")
                         .HasColumnType("timestamp with time zone");
@@ -225,9 +265,14 @@ namespace PropertyBill.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("DisputeId");
 
                     b.HasIndex("BillId");
+
+                    b.HasIndex("ResidentId");
 
                     b.ToTable("Disputes");
                 });
@@ -240,20 +285,27 @@ namespace PropertyBill.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("NotificationId"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DeepLink")
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsRead")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<int>("ResidentId")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -266,27 +318,30 @@ namespace PropertyBill.Api.Migrations
 
             modelBuilder.Entity("PropertyBill.Api.Models.NotificationToken", b =>
                 {
-                    b.Property<int>("NotificationTokenId")
+                    b.Property<int>("TokenId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("NotificationTokenId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TokenId"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Platform")
+                    b.Property<string>("DeviceInfo")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("ExpoPushToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("RegisteredAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("ResidentId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("NotificationTokenId");
+                    b.HasKey("TokenId");
 
                     b.HasIndex("ResidentId");
 
@@ -301,18 +356,21 @@ namespace PropertyBill.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PaymentId"));
 
-                    b.Property<int>("AccountId")
-                        .HasColumnType("integer");
-
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("Method")
+                    b.Property<int>("BillId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Channel")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ProofId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -320,36 +378,51 @@ namespace PropertyBill.Api.Migrations
 
                     b.HasKey("PaymentId");
 
-                    b.HasIndex("AccountId");
+                    b.HasIndex("BillId");
+
+                    b.HasIndex("ProofId");
 
                     b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("PropertyBill.Api.Models.PaymentProof", b =>
                 {
-                    b.Property<int>("PaymentProofId")
+                    b.Property<int>("ProofId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PaymentProofId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ProofId"));
 
-                    b.Property<int>("BillId")
-                        .HasColumnType("integer");
+                    b.Property<string>("AdminRemarks")
+                        .HasColumnType("text");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("FileUrl")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("ResidentId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UploadedAt")
+                    b.Property<DateTime>("SubmittedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("PaymentProofId");
+                    b.HasKey("ProofId");
 
-                    b.HasIndex("BillId");
+                    b.HasIndex("ResidentId");
 
                     b.ToTable("PaymentProofs");
                 });
@@ -363,6 +436,14 @@ namespace PropertyBill.Api.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PropertyId"));
 
                     b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContactEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContactPhone")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -386,6 +467,9 @@ namespace PropertyBill.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ResidentId"));
 
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -393,24 +477,31 @@ namespace PropertyBill.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("FullName")
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                    b.Property<string>("NotificationPreferences")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Phone")
+                    b.Property<string>("PhoneNumber")
                         .HasColumnType("text");
 
                     b.Property<int>("UnitId")
                         .HasColumnType("integer");
 
                     b.HasKey("ResidentId");
+
+                    b.HasIndex("AccountId")
+                        .IsUnique();
 
                     b.HasIndex("Email")
                         .IsUnique();
@@ -428,8 +519,18 @@ namespace PropertyBill.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UnitId"));
 
+                    b.Property<int>("Floor")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("PropertyId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("UnitNumber")
                         .IsRequired()
@@ -468,17 +569,6 @@ namespace PropertyBill.Api.Migrations
                     b.ToTable("UnitBillingRates");
                 });
 
-            modelBuilder.Entity("PropertyBill.Api.Models.Account", b =>
-                {
-                    b.HasOne("PropertyBill.Api.Models.Unit", "Unit")
-                        .WithOne("Account")
-                        .HasForeignKey("PropertyBill.Api.Models.Account", "UnitId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Unit");
-                });
-
             modelBuilder.Entity("PropertyBill.Api.Models.AuditLog", b =>
                 {
                     b.HasOne("PropertyBill.Api.Models.AdminUser", "AdminUser")
@@ -492,13 +582,13 @@ namespace PropertyBill.Api.Migrations
 
             modelBuilder.Entity("PropertyBill.Api.Models.Bill", b =>
                 {
-                    b.HasOne("PropertyBill.Api.Models.Account", "Account")
+                    b.HasOne("PropertyBill.Api.Models.Unit", "Unit")
                         .WithMany("Bills")
-                        .HasForeignKey("AccountId")
+                        .HasForeignKey("UnitId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Account");
+                    b.Navigation("Unit");
                 });
 
             modelBuilder.Entity("PropertyBill.Api.Models.BillLineItem", b =>
@@ -519,6 +609,17 @@ namespace PropertyBill.Api.Migrations
                     b.Navigation("BillingItem");
                 });
 
+            modelBuilder.Entity("PropertyBill.Api.Models.BillingItem", b =>
+                {
+                    b.HasOne("PropertyBill.Api.Models.Property", "Property")
+                        .WithMany("BillingItems")
+                        .HasForeignKey("PropertyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Property");
+                });
+
             modelBuilder.Entity("PropertyBill.Api.Models.Dispute", b =>
                 {
                     b.HasOne("PropertyBill.Api.Models.Bill", "Bill")
@@ -527,7 +628,15 @@ namespace PropertyBill.Api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("PropertyBill.Api.Models.Resident", "Resident")
+                        .WithMany("Disputes")
+                        .HasForeignKey("ResidentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Bill");
+
+                    b.Navigation("Resident");
                 });
 
             modelBuilder.Entity("PropertyBill.Api.Models.Notification", b =>
@@ -554,33 +663,48 @@ namespace PropertyBill.Api.Migrations
 
             modelBuilder.Entity("PropertyBill.Api.Models.Payment", b =>
                 {
-                    b.HasOne("PropertyBill.Api.Models.Account", "Account")
-                        .WithMany("Payments")
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Account");
-                });
-
-            modelBuilder.Entity("PropertyBill.Api.Models.PaymentProof", b =>
-                {
                     b.HasOne("PropertyBill.Api.Models.Bill", "Bill")
-                        .WithMany("PaymentProofs")
+                        .WithMany("Payments")
                         .HasForeignKey("BillId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("PropertyBill.Api.Models.PaymentProof", "PaymentProof")
+                        .WithMany("Payments")
+                        .HasForeignKey("ProofId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Bill");
+
+                    b.Navigation("PaymentProof");
+                });
+
+            modelBuilder.Entity("PropertyBill.Api.Models.PaymentProof", b =>
+                {
+                    b.HasOne("PropertyBill.Api.Models.Resident", "Resident")
+                        .WithMany("PaymentProofs")
+                        .HasForeignKey("ResidentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Resident");
                 });
 
             modelBuilder.Entity("PropertyBill.Api.Models.Resident", b =>
                 {
+                    b.HasOne("PropertyBill.Api.Models.Account", "Account")
+                        .WithOne("Resident")
+                        .HasForeignKey("PropertyBill.Api.Models.Resident", "AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("PropertyBill.Api.Models.Unit", "Unit")
                         .WithMany("Residents")
                         .HasForeignKey("UnitId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Account");
 
                     b.Navigation("Unit");
                 });
@@ -617,9 +741,7 @@ namespace PropertyBill.Api.Migrations
 
             modelBuilder.Entity("PropertyBill.Api.Models.Account", b =>
                 {
-                    b.Navigation("Bills");
-
-                    b.Navigation("Payments");
+                    b.Navigation("Resident");
                 });
 
             modelBuilder.Entity("PropertyBill.Api.Models.AdminUser", b =>
@@ -633,7 +755,7 @@ namespace PropertyBill.Api.Migrations
 
                     b.Navigation("Disputes");
 
-                    b.Navigation("PaymentProofs");
+                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("PropertyBill.Api.Models.BillingItem", b =>
@@ -643,21 +765,32 @@ namespace PropertyBill.Api.Migrations
                     b.Navigation("UnitBillingRates");
                 });
 
+            modelBuilder.Entity("PropertyBill.Api.Models.PaymentProof", b =>
+                {
+                    b.Navigation("Payments");
+                });
+
             modelBuilder.Entity("PropertyBill.Api.Models.Property", b =>
                 {
+                    b.Navigation("BillingItems");
+
                     b.Navigation("Units");
                 });
 
             modelBuilder.Entity("PropertyBill.Api.Models.Resident", b =>
                 {
+                    b.Navigation("Disputes");
+
                     b.Navigation("NotificationTokens");
 
                     b.Navigation("Notifications");
+
+                    b.Navigation("PaymentProofs");
                 });
 
             modelBuilder.Entity("PropertyBill.Api.Models.Unit", b =>
                 {
-                    b.Navigation("Account");
+                    b.Navigation("Bills");
 
                     b.Navigation("Residents");
 

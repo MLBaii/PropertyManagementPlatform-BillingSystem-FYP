@@ -16,8 +16,8 @@ public class BillRepository : IBillRepository
     public Task<List<Bill>> GetByUnitIdAsync(int unitId)
     {
         return _context.Bills
-            .Where(b => b.Account.UnitId == unitId)
-            .OrderByDescending(b => b.BillingPeriodStart)
+            .Where(b => b.UnitId == unitId)
+            .OrderByDescending(b => b.IssueDate)
             .ToListAsync();
     }
 }
