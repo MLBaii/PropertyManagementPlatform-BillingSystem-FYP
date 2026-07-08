@@ -1,7 +1,8 @@
 # Database Schema (Shared)
 
-> Designed jointly. Single SQL Server database, online-hosted.
+> Designed jointly. Single PostgreSQL (hosted on Supabase) database.
 > Resident-owned entities and admin-owned entities share this schema.
+> Backend connects via EF Core using the Npgsql.EntityFrameworkCore.PostgreSQL provider.
 
 ## ⚠️ Corrections to apply vs. the original Ch.4 ERD
 The documented Table 4.3 has errors to fix when building the real schema:

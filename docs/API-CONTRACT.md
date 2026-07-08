@@ -1,5 +1,7 @@
 # API Contract (Shared)
 
+> Backend: ASP.NET Core Web API (unchanged). Database: PostgreSQL hosted on Supabase, accessed via EF Core + Npgsql.
+
 > Endpoints and JSON shapes are agreed jointly between Module A and Module B.
 > This is the single source of truth — update here before changing either side.
 > All resident endpoints are JWT-authenticated and scoped to the resident's unit.

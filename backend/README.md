@@ -2,14 +2,14 @@
 
 The shared business-logic and data-access layer for both modules. Exposes RESTful
 endpoints consumed by the resident app (Module B) and admin portal (Module A),
-backed by a single SQL Server database.
+backed by a single PostgreSQL hosted on Supabase database.
 
-**Stack:** ASP.NET Core Web API, Entity Framework Core, SQL Server (hosted online)
+**Stack:** ASP.NET Core Web API, Entity Framework Core (Npgsql.EntityFrameworkCore.PostgreSQL provider), PostgreSQL hosted on Supabase
 **Auth:** JWT issuance; role-based access control; bcrypt password hashing
 
 ## Layers
 Controllers → Services → Repositories → Domain Models (EF Core)
 
 ## Setup
-_Setup steps TBD. Connection string points to the shared online SQL Server._
+_Setup steps TBD. Connection string points to the shared Supabase-hosted PostgreSQL database._
 See `../docs/API-CONTRACT.md` and `../docs/SCHEMA.md` for the agreed contract.

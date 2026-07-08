@@ -15,3 +15,4 @@ Auth → Profile → Bills → Dashboard → PDF → Payment Proof → Notificat
 | Date | Module | What changed | Notes |
 |------|--------|--------------|-------|
 | YYYY-MM-DD | — | Repo scaffolded | Initial structure + docs |
+| 2026-07-08 | Backend | Switched database from SQL Server to Supabase (PostgreSQL); kept ASP.NET Core API. | Reason: free online SQL Server hosting unavailable (Azure student region-restricted, Somee impractical). |
