@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: fonts.heading,
     fontSize: 26,
-    letterSpacing: -0.3,
+    letterSpacing: -0.52, // -0.02em at 26px, per .screen-title in the mockup
     color: colors.text,
     marginBottom: 6,
   },
