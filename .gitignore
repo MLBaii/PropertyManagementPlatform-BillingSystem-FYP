@@ -9,6 +9,7 @@ npm-debug.*
 bin/
 obj/
 *.user
+backend/appsettings.Development.json
 
 # Env / secrets
 .env

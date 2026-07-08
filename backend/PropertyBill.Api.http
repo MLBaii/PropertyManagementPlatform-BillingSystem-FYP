@@ -1,0 +1,17 @@
+@PropertyBill.Api_HostAddress = http://localhost:5112
+
+POST {{PropertyBill.Api_HostAddress}}/api/auth/resident/login
+Content-Type: application/json
+
+{
+  "email": "resident@example.com",
+  "password": "password"
+}
+
+###
+
+GET {{PropertyBill.Api_HostAddress}}/api/residents/bills
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
