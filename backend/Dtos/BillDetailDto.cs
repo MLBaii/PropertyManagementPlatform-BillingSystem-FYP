@@ -1,6 +1,6 @@
 namespace PropertyBill.Api.Dtos;
 
-public class BillDto
+public class BillDetailDto
 {
     public int BillId { get; set; }
     public string ReferenceNumber { get; set; } = string.Empty;
@@ -9,11 +9,7 @@ public class BillDto
     public DateTime DueDate { get; set; }
     public decimal TotalAmount { get; set; }
     public decimal OutstandingBalance { get; set; }
-
-    // Computed, not the raw stored column — see BillService.ComputeEffectiveStatus.
-    // One of "Unpaid" | "Overdue" | "Paid".
     public string Status { get; set; } = string.Empty;
-
-    // Positive = days left until due; negative = days overdue. Not meaningful once Paid.
     public int DaysUntilDue { get; set; }
+    public List<BillLineItemDto> LineItems { get; set; } = new();
 }

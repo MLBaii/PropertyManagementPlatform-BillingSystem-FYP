@@ -5,6 +5,8 @@ export const fonts = {
   body: 'Inter_400Regular',
   bodyMedium: 'Inter_500Medium',
   bodySemiBold: 'Inter_600SemiBold',
+  mono: 'JetBrainsMono_400Regular',
+  monoMedium: 'JetBrainsMono_500Medium',
 } as const;
 
 export const fontsToLoad = {
@@ -13,4 +15,6 @@ export const fontsToLoad = {
   Inter_400Regular: require('@expo-google-fonts/inter/400Regular/Inter_400Regular.ttf'),
   Inter_500Medium: require('@expo-google-fonts/inter/500Medium/Inter_500Medium.ttf'),
   Inter_600SemiBold: require('@expo-google-fonts/inter/600SemiBold/Inter_600SemiBold.ttf'),
+  JetBrainsMono_400Regular: require('@expo-google-fonts/jetbrains-mono/400Regular/JetBrainsMono_400Regular.ttf'),
+  JetBrainsMono_500Medium: require('@expo-google-fonts/jetbrains-mono/500Medium/JetBrainsMono_500Medium.ttf'),
 } as const;

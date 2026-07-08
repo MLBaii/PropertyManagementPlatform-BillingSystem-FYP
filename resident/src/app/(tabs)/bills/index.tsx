@@ -1,0 +1,133 @@
+import { router } from 'expo-router';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+
+import { BillCard } from '@/components/bills/BillCard';
+import { BillFilter, BillFilterRow } from '@/components/bills/BillFilterRow';
+import { Screen } from '@/components/ui/Screen';
+import { Bill, getBills } from '@/services/bills/billsService';
+import { colors } from '@/theme/colors';
+import { fonts } from '@/theme/typography';
+
+export default function BillsListScreen() {
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | undefined>();
+  const [filter, setFilter] = useState<BillFilter>('All');
+
+  useEffect(() => {
+    getBills()
+      .then(setBills)
+      .catch(() => setLoadError('Could not load your bills. Pull down to try again.'))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const filteredBills = useMemo(() => {
+    if (filter === 'All') {
+      return bills;
+    }
+    return bills.filter((bill) => bill.status === filter);
+  }, [bills, filter]);
+
+  if (isLoading) {
+    return (
+      <Screen style={styles.centered}>
+        <ActivityIndicator color={colors.accent} />
+      </Screen>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <Screen style={styles.centered}>
+        <Text style={styles.loadError}>{loadError}</Text>
+      </Screen>
+    );
+  }
+
+  return (
+    <Screen>
+      <FlatList
+        data={filteredBills}
+        keyExtractor={(bill) => String(bill.billId)}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={
+          <View>
+            <View style={styles.header}>
+              <Text style={styles.eyebrow}>{bills.length} bills</Text>
+              <Text style={styles.title}>Bills</Text>
+            </View>
+            <View style={styles.filterWrap}>
+              <BillFilterRow value={filter} onChange={setFilter} />
+            </View>
+          </View>
+        }
+        renderItem={({ item }) => (
+          <BillCard
+            bill={item}
+            onPress={() =>
+              router.push({ pathname: '/(tabs)/bills/[billId]', params: { billId: String(item.billId) } })
+            }
+          />
+        )}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>
+              {bills.length === 0
+                ? 'You have no bills yet — check back after your first billing cycle.'
+                : `No ${filter.toLowerCase()} bills.`}
+            </Text>
+          </View>
+        }
+      />
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  centered: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadError: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  listContent: {
+    paddingTop: 10,
+    paddingBottom: 32,
+  },
+  header: {
+    marginVertical: 4,
+    marginBottom: 14,
+  },
+  eyebrow: {
+    fontFamily: fonts.body,
+    fontSize: 10,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    color: colors.textSecondary,
+  },
+  title: {
+    fontFamily: fonts.heading,
+    fontSize: 26,
+    letterSpacing: -0.52,
+    color: colors.text,
+  },
+  filterWrap: {
+    marginBottom: 16,
+  },
+  emptyState: {
+    paddingTop: 40,
+    paddingHorizontal: 12,
+  },
+  emptyText: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+});

@@ -1,0 +1,203 @@
+import { Feather } from '@expo/vector-icons';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+
+import { StatusBadge } from '@/components/bills/StatusBadge';
+import { Card } from '@/components/ui/Card';
+import { GhostButton } from '@/components/ui/GhostButton';
+import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { Screen } from '@/components/ui/Screen';
+import { BillDetail, getBillById } from '@/services/bills/billsService';
+import { colors } from '@/theme/colors';
+import { fonts } from '@/theme/typography';
+import { getCountdownColor, getCountdownLabel, shouldShowDueDateLine } from '@/utils/billStatus';
+import { formatBillingPeriod, formatShortDate } from '@/utils/formatDate';
+
+export default function BillDetailScreen() {
+  const { billId } = useLocalSearchParams<{ billId: string }>();
+  const [bill, setBill] = useState<BillDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | undefined>();
+
+  useEffect(() => {
+    const id = Number(billId);
+    if (!Number.isFinite(id)) {
+      setLoadError('Invalid bill.');
+      setIsLoading(false);
+      return;
+    }
+
+    getBillById(id)
+      .then(setBill)
+      .catch(() => setLoadError('Could not load this bill.'))
+      .finally(() => setIsLoading(false));
+  }, [billId]);
+
+  if (isLoading) {
+    return (
+      <Screen style={styles.centered}>
+        <ActivityIndicator color={colors.accent} />
+      </Screen>
+    );
+  }
+
+  if (!bill) {
+    return (
+      <Screen style={styles.centered}>
+        <Text style={styles.loadError}>{loadError}</Text>
+      </Screen>
+    );
+  }
+
+  const countdownColor = getCountdownColor(bill.status);
+  const countdownLabel = getCountdownLabel(bill);
+  const showDueDate = shouldShowDueDateLine(bill.status);
+
+  return (
+    <Screen>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.topRow}>
+          <Pressable style={styles.backRow} onPress={() => router.back()} hitSlop={10}>
+            <Feather name="chevron-left" size={16} color={colors.accent} />
+            <Text style={styles.backText}>Bills</Text>
+          </Pressable>
+          <StatusBadge status={bill.status} />
+        </View>
+
+        <Text style={styles.eyebrow}>{bill.referenceNumber}</Text>
+        <Text style={styles.title}>{formatBillingPeriod(bill.billingPeriod)}</Text>
+        <Text style={[styles.countdown, { color: countdownColor }]}>
+          {countdownLabel}
+          {showDueDate ? ` · Due ${formatShortDate(bill.dueDate)}` : ''}
+        </Text>
+
+        <Card style={styles.lineItemsCard}>
+          {bill.lineItems.map((item) => {
+            const isPenalty = item.lineItemType === 'Penalty';
+            return (
+              <View key={item.lineItemId} style={styles.lineItem}>
+                <Text style={[styles.lineLabel, isPenalty && styles.penaltyText]}>
+                  {item.description}
+                </Text>
+                <Text style={[styles.lineAmount, isPenalty && styles.penaltyText]}>
+                  RM {item.amount.toFixed(2)}
+                </Text>
+              </View>
+            );
+          })}
+          <View style={[styles.lineItem, styles.totalRow]}>
+            <Text style={styles.totalLabel}>Total Due</Text>
+            <Text style={styles.totalAmount}>RM {bill.outstandingBalance.toFixed(2)}</Text>
+          </View>
+        </Card>
+
+        <View style={styles.actions}>
+          <PrimaryButton label="Upload Payment Proof" onPress={() => {}} disabled />
+          <GhostButton label="Download PDF" disabled />
+          <Text style={styles.disputeLink}>Dispute This Bill</Text>
+        </View>
+      </ScrollView>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  centered: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadError: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  scrollContent: {
+    paddingTop: 10,
+    paddingBottom: 32,
+  },
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  backRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 13,
+    color: colors.accent,
+  },
+  eyebrow: {
+    fontFamily: fonts.body,
+    fontSize: 10,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    color: colors.textSecondary,
+  },
+  title: {
+    fontFamily: fonts.heading,
+    fontSize: 26,
+    letterSpacing: -0.52,
+    color: colors.text,
+    marginTop: 2,
+    marginBottom: 4,
+  },
+  countdown: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    marginBottom: 18,
+  },
+  lineItemsCard: {
+    marginBottom: 16,
+  },
+  lineItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 11,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  lineLabel: {
+    fontFamily: fonts.body,
+    fontSize: 13.5,
+    color: colors.textSecondary,
+  },
+  lineAmount: {
+    fontFamily: fonts.mono,
+    fontSize: 13.5,
+    color: colors.text,
+  },
+  penaltyText: {
+    color: colors.danger,
+  },
+  totalRow: {
+    paddingTop: 13,
+    borderBottomWidth: 0,
+  },
+  totalLabel: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    color: colors.text,
+  },
+  totalAmount: {
+    fontFamily: fonts.monoMedium,
+    fontSize: 16,
+    color: colors.accent,
+  },
+  actions: {
+    gap: 14,
+  },
+  disputeLink: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    paddingTop: 6,
+    opacity: 0.6,
+  },
+});

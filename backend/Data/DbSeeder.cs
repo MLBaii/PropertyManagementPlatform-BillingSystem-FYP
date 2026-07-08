@@ -53,6 +53,9 @@ public static class DbSeeder
             IsActive = true,
         };
 
+        // Raw Bill.Status only ever holds "Unpaid" or "Paid" — "Overdue" (and future
+        // "ProofSubmitted") are derived in BillService from the due date / payment
+        // state, since nothing here runs a scheduled job to flip a stored status over.
         var juneBill = new Bill
         {
             Unit = unitA,
@@ -61,7 +64,7 @@ public static class DbSeeder
             IssueDate = new DateTime(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc),
             TotalAmount = 350.00m,
             OutstandingBalance = 350.00m,
-            Status = "Pending",
+            Status = "Unpaid",
             DueDate = new DateTime(2026, 7, 15, 0, 0, 0, DateTimeKind.Utc),
         };
         juneBill.BillLineItems.Add(new BillLineItem { Description = "Maintenance Fee", Amount = 300.00m, LineItemType = "Charge" });
@@ -81,10 +84,45 @@ public static class DbSeeder
         mayBill.BillLineItems.Add(new BillLineItem { Description = "Maintenance Fee", Amount = 300.00m, LineItemType = "Charge" });
         mayBill.BillLineItems.Add(new BillLineItem { Description = "Sinking Fund", Amount = 50.00m, LineItemType = "Charge" });
 
+        // Overdue example with a richer line-item breakdown (brought-forward + late
+        // interest), mirroring Figure 4.11 of the mockups so the Bill Detail screen
+        // has real data to match against.
+        var aprilBill = new Bill
+        {
+            Unit = unitA,
+            BillingPeriod = "2026-04",
+            ReferenceNumber = "SKV-2026-04-A0101",
+            IssueDate = new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc),
+            TotalAmount = 420.50m,
+            OutstandingBalance = 420.50m,
+            Status = "Unpaid",
+            DueDate = new DateTime(2026, 5, 15, 0, 0, 0, DateTimeKind.Utc),
+        };
+        aprilBill.BillLineItems.Add(new BillLineItem { Description = "Maintenance Fee", Amount = 280.00m, LineItemType = "Charge" });
+        aprilBill.BillLineItems.Add(new BillLineItem { Description = "Sinking Fund", Amount = 56.00m, LineItemType = "Charge" });
+        aprilBill.BillLineItems.Add(new BillLineItem { Description = "Water Charges", Amount = 32.50m, LineItemType = "Charge" });
+        aprilBill.BillLineItems.Add(new BillLineItem { Description = "Parking", Amount = 30.00m, LineItemType = "Charge" });
+        aprilBill.BillLineItems.Add(new BillLineItem { Description = "Insurance", Amount = 12.00m, LineItemType = "Charge" });
+        aprilBill.BillLineItems.Add(new BillLineItem { Description = "Outstanding b/f", Amount = 0.00m, LineItemType = "BroughtForward" });
+        aprilBill.BillLineItems.Add(new BillLineItem { Description = "Late Interest (1%)", Amount = 10.00m, LineItemType = "Penalty" });
+
         context.Properties.Add(property);
         context.Residents.AddRange(residentA, residentB);
-        context.Bills.AddRange(juneBill, mayBill);
+        context.Bills.AddRange(juneBill, mayBill, aprilBill);
 
+        await context.SaveChangesAsync();
+    }
+
+    // Drops all seeded rows (FK-safe order) so SeedAsync can insert fresh data,
+    // e.g. after changing what gets seeded. Dev-only — never call this outside --reseed.
+    public static async Task ClearAsync(AppDbContext context)
+    {
+        context.BillLineItems.RemoveRange(context.BillLineItems);
+        context.Bills.RemoveRange(context.Bills);
+        context.Residents.RemoveRange(context.Residents);
+        context.Accounts.RemoveRange(context.Accounts);
+        context.Units.RemoveRange(context.Units);
+        context.Properties.RemoveRange(context.Properties);
         await context.SaveChangesAsync();
     }
 }

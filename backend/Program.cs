@@ -44,10 +44,14 @@ builder.Services.AddScoped<IProfileService, ProfileService>();
 
 var app = builder.Build();
 
-if (args.Contains("--seed"))
+if (args.Contains("--seed") || args.Contains("--reseed"))
 {
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    if (args.Contains("--reseed"))
+    {
+        await DbSeeder.ClearAsync(context);
+    }
     await DbSeeder.SeedAsync(context);
     return;
 }

@@ -68,3 +68,60 @@ Request/response body is a `NotificationPreferencesDto`:
 { "pushEnabled": true, "emailEnabled": false, "billDueReminders": true }
 ```
 Response `200` wraps it: `{ "notificationPreferences": { ... }, "message": "Notification preferences updated." }`.
+
+### Bills (UC-103) — implemented
+
+Both endpoints are `[Authorize]`, scoped to the JWT's `UnitId` claim.
+
+`status` in the response is **computed**, not the raw stored value — see `BillService.ComputeEffectiveStatus`.
+Nothing in this project runs a scheduled job to flip a bill from unpaid to overdue, so "Overdue" is derived
+from `dueDate` vs. the current date every time the endpoint is called, rather than being a value anyone writes.
+Raw `Bill.Status` in the database only ever holds `"Unpaid"` or `"Paid"` (plus, once payment-proof upload
+exists, `"ProofSubmitted"`).
+
+#### `GET /api/residents/bills?status={status}`
+`status` query param is optional, case-insensitive, one of `Unpaid` | `Overdue` | `Paid` (and, once
+implemented, `ProofSubmitted`) — filters the list to bills whose *computed* status matches. Response `200`:
+```json
+[
+  {
+    "billId": 3,
+    "referenceNumber": "SKV-2026-04-A0101",
+    "billingPeriod": "2026-04",
+    "issueDate": "2026-04-01T00:00:00Z",
+    "dueDate": "2026-05-15T00:00:00Z",
+    "totalAmount": 420.50,
+    "outstandingBalance": 420.50,
+    "status": "Overdue",
+    "daysUntilDue": -54
+  }
+]
+```
+`daysUntilDue` is positive when the due date is in the future, negative when overdue by that many days.
+
+#### `GET /api/residents/bills/{billId}`
+Response `200` — same fields as the list, plus the itemised line items:
+```json
+{
+  "billId": 3,
+  "referenceNumber": "SKV-2026-04-A0101",
+  "billingPeriod": "2026-04",
+  "issueDate": "2026-04-01T00:00:00Z",
+  "dueDate": "2026-05-15T00:00:00Z",
+  "totalAmount": 420.50,
+  "outstandingBalance": 420.50,
+  "status": "Overdue",
+  "daysUntilDue": -54,
+  "lineItems": [
+    { "lineItemId": 1, "description": "Maintenance Fee", "amount": 280.00, "lineItemType": "Charge" },
+    { "lineItemId": 2, "description": "Sinking Fund", "amount": 56.00, "lineItemType": "Charge" },
+    { "lineItemId": 3, "description": "Water Charges", "amount": 32.50, "lineItemType": "Charge" },
+    { "lineItemId": 4, "description": "Parking", "amount": 30.00, "lineItemType": "Charge" },
+    { "lineItemId": 5, "description": "Insurance", "amount": 12.00, "lineItemType": "Charge" },
+    { "lineItemId": 6, "description": "Outstanding b/f", "amount": 0.00, "lineItemType": "BroughtForward" },
+    { "lineItemId": 7, "description": "Late Interest (1%)", "amount": 10.00, "lineItemType": "Penalty" }
+  ]
+}
+```
+`404` if the bill doesn't exist **or** belongs to a different unit — deliberately not distinguished, to avoid
+confirming a `billId` belongs to someone else.

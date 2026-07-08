@@ -20,16 +20,27 @@ public class ResidentsController : ControllerBase
     }
 
     [HttpGet("bills")]
-    public async Task<ActionResult<List<BillDto>>> GetBills()
+    public async Task<ActionResult<List<BillDto>>> GetBills([FromQuery] string? status)
     {
-        var unitIdClaim = User.FindFirst("UnitId")?.Value;
-        if (!int.TryParse(unitIdClaim, out var unitId))
+        if (!TryGetUnitId(out var unitId))
         {
             return Unauthorized();
         }
 
-        var bills = await _billService.GetBillsForUnitAsync(unitId);
+        var bills = await _billService.GetBillsForUnitAsync(unitId, status);
         return Ok(bills);
+    }
+
+    [HttpGet("bills/{billId:int}")]
+    public async Task<ActionResult<BillDetailDto>> GetBillDetail(int billId)
+    {
+        if (!TryGetUnitId(out var unitId))
+        {
+            return Unauthorized();
+        }
+
+        var detail = await _billService.GetBillDetailAsync(unitId, billId);
+        return detail is null ? NotFound(new { message = "Bill not found." }) : Ok(detail);
     }
 
     [HttpGet("profile")]
@@ -102,5 +113,11 @@ public class ResidentsController : ControllerBase
     {
         var residentIdClaim = User.FindFirst("ResidentId")?.Value;
         return int.TryParse(residentIdClaim, out residentId);
+    }
+
+    private bool TryGetUnitId(out int unitId)
+    {
+        var unitIdClaim = User.FindFirst("UnitId")?.Value;
+        return int.TryParse(unitIdClaim, out unitId);
     }
 }
