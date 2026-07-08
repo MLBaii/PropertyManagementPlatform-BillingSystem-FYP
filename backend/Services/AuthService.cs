@@ -1,26 +1,41 @@
 using PropertyBill.Api.Dtos;
+using PropertyBill.Api.Repositories;
 
 namespace PropertyBill.Api.Services;
 
-// Stub: issues a JWT without validating against the Resident table yet.
-// Real credential lookup + password verification lands once Repositories/ResidentRepository
-// and the migration are wired up against live data.
 public class AuthService : IAuthService
 {
+    private readonly IResidentRepository _residentRepository;
     private readonly IJwtTokenService _jwtTokenService;
 
-    public AuthService(IJwtTokenService jwtTokenService)
+    public AuthService(IResidentRepository residentRepository, IJwtTokenService jwtTokenService)
     {
+        _residentRepository = residentRepository;
         _jwtTokenService = jwtTokenService;
     }
 
-    public LoginResponse Login(LoginRequest request)
+    public async Task<AuthResult> LoginAsync(LoginRequest request)
     {
-        const int stubResidentId = 1;
-        const int stubUnitId = 1;
-        const string stubRole = "Resident";
+        var resident = await _residentRepository.GetByEmailAsync(request.Email);
+        if (resident is null || !BCrypt.Net.BCrypt.Verify(request.Password, resident.PasswordHash))
+        {
+            return AuthResult.InvalidCredentials();
+        }
 
-        var token = _jwtTokenService.GenerateToken(stubResidentId, stubUnitId, stubRole);
-        return new LoginResponse { Token = token };
+        if (!resident.IsActive)
+        {
+            return AuthResult.AccountDisabled();
+        }
+
+        var token = _jwtTokenService.GenerateToken(resident.ResidentId, resident.UnitId, "Resident");
+
+        return AuthResult.Success(new LoginResponse
+        {
+            Token = token,
+            ResidentId = resident.ResidentId,
+            FullName = resident.FullName,
+            Email = resident.Email,
+            UnitId = resident.UnitId,
+        });
     }
 }

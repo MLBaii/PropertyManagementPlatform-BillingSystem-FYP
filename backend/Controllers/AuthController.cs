@@ -16,9 +16,16 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public ActionResult<LoginResponse> Login([FromBody] LoginRequest request)
+    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
-        var response = _authService.Login(request);
-        return Ok(response);
+        var result = await _authService.LoginAsync(request);
+
+        return result.Status switch
+        {
+            AuthResultStatus.Success => Ok(result.Response),
+            AuthResultStatus.AccountDisabled => StatusCode(StatusCodes.Status403Forbidden,
+                new { message = "This resident account is disabled." }),
+            _ => Unauthorized(new { message = "Invalid email or password." }),
+        };
     }
 }

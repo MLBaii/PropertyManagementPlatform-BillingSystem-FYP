@@ -4,5 +4,5 @@ namespace PropertyBill.Api.Services;
 
 public interface IAuthService
 {
-    LoginResponse Login(LoginRequest request);
+    Task<AuthResult> LoginAsync(LoginRequest request);
 }
