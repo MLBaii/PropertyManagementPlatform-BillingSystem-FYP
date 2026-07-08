@@ -17,4 +17,22 @@ public class ResidentRepository : IResidentRepository
     {
         return _context.Residents.FirstOrDefaultAsync(r => r.Email == email);
     }
+
+    public Task<Resident?> GetByIdAsync(int residentId)
+    {
+        return _context.Residents
+            .Include(r => r.Unit)
+            .ThenInclude(u => u.Property)
+            .FirstOrDefaultAsync(r => r.ResidentId == residentId);
+    }
+
+    public Task<bool> ExistsWithEmailAsync(string email, int excludingResidentId)
+    {
+        return _context.Residents.AnyAsync(r => r.Email == email && r.ResidentId != excludingResidentId);
+    }
+
+    public Task SaveChangesAsync()
+    {
+        return _context.SaveChangesAsync();
+    }
 }

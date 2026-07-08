@@ -9,13 +9,19 @@ type Props = TextInputProps & {
   error?: string;
 };
 
-export function TextField({ label, error, style, ...inputProps }: Props) {
+export function TextField({ label, error, style, editable, ...inputProps }: Props) {
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
         placeholderTextColor={colors.textSecondary}
-        style={[styles.input, error ? styles.inputError : null, style]}
+        editable={editable}
+        style={[
+          styles.input,
+          editable === false ? styles.inputDisabled : null,
+          error ? styles.inputError : null,
+          style,
+        ]}
         {...inputProps}
       />
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -46,6 +52,10 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: colors.danger,
+  },
+  inputDisabled: {
+    color: colors.textSecondary,
+    opacity: 0.7,
   },
   errorText: {
     color: colors.danger,

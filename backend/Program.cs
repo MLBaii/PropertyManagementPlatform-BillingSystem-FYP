@@ -40,6 +40,7 @@ builder.Services.AddScoped<IResidentRepository, ResidentRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IBillRepository, BillRepository>();
 builder.Services.AddScoped<IBillService, BillService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
 
 var app = builder.Build();
 

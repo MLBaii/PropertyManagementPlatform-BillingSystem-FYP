@@ -11,6 +11,8 @@ export const colors = {
   onAccent: '#1A1410',
   danger: '#D97560',
   dangerBg: 'rgba(217, 117, 96, 0.14)',
+  success: '#7CB596',
+  successBg: 'rgba(124, 181, 150, 0.12)',
 } as const;
 
 export type ThemeColors = typeof colors;
