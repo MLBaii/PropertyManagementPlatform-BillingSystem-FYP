@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -16,11 +16,15 @@ function isValidEmail(email: string): boolean {
 
 export default function LoginScreen() {
   const { login } = useAuth();
+  const { sessionExpired } = useLocalSearchParams<{ sessionExpired?: string }>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState<string | undefined>();
   const [passwordError, setPasswordError] = useState<string | undefined>();
-  const [formError, setFormError] = useState<string | undefined>();
+  // UC-101 A6: pre-filled when the axios interceptor redirects here after a 401.
+  const [formError, setFormError] = useState<string | undefined>(
+    sessionExpired === '1' ? 'Your session has expired. Please log in again.' : undefined
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLogin = async () => {

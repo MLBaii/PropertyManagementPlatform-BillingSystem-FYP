@@ -1,8 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 
-import { AUTH_TOKEN_KEY } from '@/services/api/client';
-
-const RESIDENT_INFO_KEY = 'propertybill_resident_info';
+import { AUTH_TOKEN_KEY, RESIDENT_INFO_KEY } from './storageKeys';
+import { isTokenExpired } from '@/utils/jwt';
 
 export type StoredResident = {
   residentId: number;
@@ -23,6 +22,13 @@ export async function loadSession(): Promise<{ token: string; resident: StoredRe
   ]);
 
   if (!token || !residentJson) {
+    return null;
+  }
+
+  // UC-101 A6: don't silently resume an expired session — clear it and let the
+  // caller fall through to the Login screen instead.
+  if (isTokenExpired(token)) {
+    await clearSession();
     return null;
   }
 
