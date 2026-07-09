@@ -100,7 +100,8 @@ implemented, `ProofSubmitted`) — filters the list to bills whose *computed* st
 `daysUntilDue` is positive when the due date is in the future, negative when overdue by that many days.
 
 #### `GET /api/residents/bills/{billId}`
-Response `200` — same fields as the list, plus the itemised line items:
+Response `200` — same fields as the list, plus the itemised line items and (since UC-105) the unit/property
+fields the PDF masthead needs:
 ```json
 {
   "billId": 3,
@@ -120,11 +121,21 @@ Response `200` — same fields as the list, plus the itemised line items:
     { "lineItemId": 5, "description": "Insurance", "amount": 12.00, "lineItemType": "Charge" },
     { "lineItemId": 6, "description": "Outstanding b/f", "amount": 0.00, "lineItemType": "BroughtForward" },
     { "lineItemId": 7, "description": "Late Interest (1%)", "amount": 10.00, "lineItemType": "Penalty" }
-  ]
+  ],
+  "unitNumber": "A-01-01",
+  "propertyName": "Skyview Residence"
 }
 ```
 `404` if the bill doesn't exist **or** belongs to a different unit — deliberately not distinguished, to avoid
 confirming a `billId` belongs to someone else.
+
+### PDF Bill Download (UC-105) — implemented, no backend endpoint
+
+Per §2.4.6, PDF generation is on-device (`expo-print`), not server-rendered, so there is no new API
+surface for this feature — the Bill Detail screen builds the PDF from the `GET /api/residents/bills/{billId}`
+response it already has (plus the resident's name, already in `AuthContext` from login). The only backend
+change was adding `unitNumber`/`propertyName` to that existing response (above), since the PDF masthead
+needed unit info the Bill Detail screen didn't previously fetch.
 
 ### Dashboard (UC-104) — implemented
 

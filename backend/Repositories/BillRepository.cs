@@ -29,6 +29,8 @@ public class BillRepository : IBillRepository
         // "isn't yours" by response shape.
         return _context.Bills
             .Include(b => b.BillLineItems)
+            .Include(b => b.Unit)
+            .ThenInclude(u => u.Property)
             .FirstOrDefaultAsync(b => b.BillId == billId && b.UnitId == unitId);
     }
 }

@@ -23,6 +23,8 @@ export type BillLineItem = {
 
 export type BillDetail = Bill & {
   lineItems: BillLineItem[];
+  unitNumber: string;
+  propertyName: string;
 };
 
 export async function getBills(status?: BillStatus): Promise<Bill[]> {

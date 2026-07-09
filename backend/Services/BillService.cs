@@ -56,6 +56,8 @@ public class BillService : IBillService
                     LineItemType = li.LineItemType,
                 })
                 .ToList(),
+            UnitNumber = bill.Unit.UnitNumber,
+            PropertyName = bill.Unit.Property.Name,
         };
     }
 

@@ -12,4 +12,9 @@ public class BillDetailDto
     public string Status { get; set; } = string.Empty;
     public int DaysUntilDue { get; set; }
     public List<BillLineItemDto> LineItems { get; set; } = new();
+
+    // Added for UC-105 (PDF download) — the Bill Detail screen needs a masthead for the
+    // generated PDF and previously had no unit/property fields on this response.
+    public string UnitNumber { get; set; } = string.Empty;
+    public string PropertyName { get; set; } = string.Empty;
 }

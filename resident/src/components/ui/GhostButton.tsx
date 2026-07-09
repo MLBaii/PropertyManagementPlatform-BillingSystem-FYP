@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
 import { colors } from '@/theme/colors';
 import { fonts } from '@/theme/typography';
@@ -8,20 +8,23 @@ type Props = {
   label: string;
   onPress?: () => void;
   disabled?: boolean;
+  loading?: boolean;
 };
 
-export function GhostButton({ label, onPress, disabled }: Props) {
+export function GhostButton({ label, onPress, disabled, loading }: Props) {
+  const isDisabled = disabled || loading;
+
   return (
     <Pressable
       onPress={onPress}
-      disabled={disabled}
+      disabled={isDisabled}
       style={({ pressed }) => [
         styles.button,
-        disabled && styles.disabled,
-        pressed && !disabled && styles.pressed,
+        isDisabled && styles.disabled,
+        pressed && !isDisabled && styles.pressed,
       ]}
     >
-      <Text style={styles.label}>{label}</Text>
+      {loading ? <ActivityIndicator color={colors.text} /> : <Text style={styles.label}>{label}</Text>}
     </Pressable>
   );
 }

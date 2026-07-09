@@ -8,17 +8,22 @@ import { Card } from '@/components/ui/Card';
 import { GhostButton } from '@/components/ui/GhostButton';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { Screen } from '@/components/ui/Screen';
+import { useAuth } from '@/services/auth/AuthContext';
 import { BillDetail, getBillById } from '@/services/bills/billsService';
 import { colors } from '@/theme/colors';
 import { fonts } from '@/theme/typography';
 import { getCountdownColor, getCountdownLabel, shouldShowDueDateLine } from '@/utils/billStatus';
 import { formatBillingPeriod, formatShortDate } from '@/utils/formatDate';
+import { generateAndShareBillPdf } from '@/utils/generateBillPdf';
 
 export default function BillDetailScreen() {
   const { billId } = useLocalSearchParams<{ billId: string }>();
+  const { resident } = useAuth();
   const [bill, setBill] = useState<BillDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | undefined>();
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState<string | undefined>();
 
   useEffect(() => {
     const id = Number(billId);
@@ -53,6 +58,18 @@ export default function BillDetailScreen() {
   const countdownColor = getCountdownColor(bill.status);
   const countdownLabel = getCountdownLabel(bill);
   const showDueDate = shouldShowDueDateLine(bill.status);
+
+  const handleDownloadPdf = async () => {
+    setPdfError(undefined);
+    setIsGeneratingPdf(true);
+    try {
+      await generateAndShareBillPdf({ bill, residentName: resident?.fullName ?? 'Resident' });
+    } catch {
+      setPdfError('Unable to generate PDF. Please try again.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
 
   return (
     <Screen>
@@ -94,7 +111,8 @@ export default function BillDetailScreen() {
 
         <View style={styles.actions}>
           <PrimaryButton label="Upload Payment Proof" onPress={() => {}} disabled />
-          <GhostButton label="Download PDF" disabled />
+          <GhostButton label="Download PDF" onPress={handleDownloadPdf} loading={isGeneratingPdf} />
+          {pdfError && <Text style={styles.pdfError}>{pdfError}</Text>}
           <Text style={styles.disputeLink}>Dispute This Bill</Text>
         </View>
       </ScrollView>
@@ -191,6 +209,13 @@ const styles = StyleSheet.create({
   },
   actions: {
     gap: 14,
+  },
+  pdfError: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.danger,
+    textAlign: 'center',
+    marginTop: -6,
   },
   disputeLink: {
     fontFamily: fonts.bodyMedium,
