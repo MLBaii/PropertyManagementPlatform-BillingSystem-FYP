@@ -76,12 +76,13 @@ Both endpoints are `[Authorize]`, scoped to the JWT's `UnitId` claim.
 `status` in the response is **computed**, not the raw stored value — see `BillService.ComputeEffectiveStatus`.
 Nothing in this project runs a scheduled job to flip a bill from unpaid to overdue, so "Overdue" is derived
 from `dueDate` vs. the current date every time the endpoint is called, rather than being a value anyone writes.
-Raw `Bill.Status` in the database only ever holds `"Unpaid"` or `"Paid"` (plus, once payment-proof upload
-exists, `"ProofSubmitted"`).
+Raw `Bill.Status` in the database holds `"Unpaid"`, `"Paid"`, or (since UC-106) `"ProofSubmitted"` — the last
+one set directly by `PaymentProofRepository.CreateAsync` when a resident tags a bill to an uploaded proof,
+rather than derived like "Overdue" is.
 
 #### `GET /api/residents/bills?status={status}`
-`status` query param is optional, case-insensitive, one of `Unpaid` | `Overdue` | `Paid` (and, once
-implemented, `ProofSubmitted`) — filters the list to bills whose *computed* status matches. Response `200`:
+`status` query param is optional, case-insensitive, one of `Unpaid` | `Overdue` | `Paid` | `ProofSubmitted`
+— filters the list to bills whose *computed* status matches. Response `200`:
 ```json
 [
   {
@@ -187,3 +188,50 @@ sum of `Payment.Amount` for the unit's `Status = "Confirmed"` payments. `creditB
 `type` is `"BillIssued"` or `"PaymentConfirmed"` — the frontend uses it to pick the sign/icon/color, since
 the API doesn't format that presentational detail itself. `reference` is the bill's reference number for a
 `BillIssued` entry, or `"{billing period} bill"` for a `PaymentConfirmed` entry.
+
+### Payment Proof (UC-106) — implemented
+
+`[Authorize]`, scoped to the JWT's `ResidentId` **and** `UnitId` claims. File storage is Supabase Storage
+(bucket `payment-proofs`, configurable via `Supabase:StorageBucket`) — the backend uploads the file via the
+Storage REST API using the `Supabase:ServiceRoleKey` service-account key (residents authenticate against
+our own JWT, not Supabase Auth, so there's no per-resident Supabase session to upload under) and stores the
+resulting public URL in `PaymentProof.FileUrl`. The bucket is created automatically on first upload if it
+doesn't exist yet (`SupabaseStorageService.EnsureBucketExistsAsync`), public, so no manual Supabase-dashboard
+setup is required beyond the service-role key.
+
+**The ERD has no direct `PaymentProof`↔`Bill` relationship** — only `Payment`→`Bill` and `Payment`→`PaymentProof`
+(both already in the schema). So "tagging" a proof to bill(s) creates one `Payment` row per tagged bill
+(`Status = "Pending"`, `Amount = Bill.OutstandingBalance`, `ProofId` → the new proof) rather than needing a new
+join table or migration. Each tagged bill's `Status` is also set directly to `"ProofSubmitted"` (see the Bills
+section above). Because `DashboardService.TotalPaid` only sums `Status = "Confirmed"` payments, a pending proof
+correctly does *not* count as paid yet — an admin flipping `Payment.Status` to `"Confirmed"` (and the bill to
+`"Paid"`) on review is admin-portal work, out of scope here.
+
+#### `POST /api/residents/payment-proofs`
+`multipart/form-data` request: a `File` part (the proof image/PDF) and one or more `BillIds` parts (repeated,
+e.g. `BillIds=6&BillIds=7`). Validated server-side (in addition to client-side validation, which is only a UX
+convenience — this can't be trusted alone): Content-Type **and** extension must both be one of
+`image/jpeg`/`.jpg`/`.jpeg`, `image/png`/`.png`, `application/pdf`/`.pdf`; size ≤ 5 MB. `BillIds` must be
+non-empty and every id must resolve to a bill owned by the caller's unit (silently excludes/rejects bills
+belonging to another resident's unit, same pattern as the Bill Detail 404). Response `201`:
+```json
+{
+  "proofId": 4,
+  "fileUrl": "https://<project-ref>.supabase.co/storage/v1/object/public/payment-proofs/5/3f9c2b1a....png",
+  "fileType": "image/png",
+  "fileSize": 421890,
+  "status": "Pending",
+  "adminRemarks": null,
+  "submittedAt": "2026-07-10T09:00:00Z",
+  "reviewedAt": null,
+  "taggedBills": [
+    { "billId": 8, "referenceNumber": "SKV-2026-04-A0101", "billingPeriod": "2026-04", "amount": 420.50 }
+  ]
+}
+```
+`400` — invalid file (wrong type/size), no bills tagged, or a tagged bill doesn't belong to the resident's
+unit. `502` — the Supabase Storage upload itself failed (network issue, bad service-role key, etc).
+
+#### `GET /api/residents/payment-proofs`
+Response `200` — the resident's submissions, most recent first, same shape as the array elements above (each
+with its own `taggedBills`). Used for the Pay tab's submission history.

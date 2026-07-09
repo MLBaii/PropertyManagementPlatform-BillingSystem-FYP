@@ -110,7 +110,12 @@ export default function BillDetailScreen() {
         </Card>
 
         <View style={styles.actions}>
-          <PrimaryButton label="Upload Payment Proof" onPress={() => {}} disabled />
+          <PrimaryButton
+            label="Upload Payment Proof"
+            onPress={() =>
+              router.push({ pathname: '/(tabs)/pay/upload', params: { billId: String(bill.billId) } })
+            }
+          />
           <GhostButton label="Download PDF" onPress={handleDownloadPdf} loading={isGeneratingPdf} />
           {pdfError && <Text style={styles.pdfError}>{pdfError}</Text>}
           <Text style={styles.disputeLink}>Dispute This Bill</Text>

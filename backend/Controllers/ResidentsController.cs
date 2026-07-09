@@ -13,12 +13,49 @@ public class ResidentsController : ControllerBase
     private readonly IBillService _billService;
     private readonly IProfileService _profileService;
     private readonly IDashboardService _dashboardService;
+    private readonly IPaymentProofService _paymentProofService;
 
-    public ResidentsController(IBillService billService, IProfileService profileService, IDashboardService dashboardService)
+    public ResidentsController(
+        IBillService billService,
+        IProfileService profileService,
+        IDashboardService dashboardService,
+        IPaymentProofService paymentProofService)
     {
         _billService = billService;
         _profileService = profileService;
         _dashboardService = dashboardService;
+        _paymentProofService = paymentProofService;
+    }
+
+    [HttpPost("payment-proofs")]
+    [RequestSizeLimit(6 * 1024 * 1024)]
+    public async Task<ActionResult<PaymentProofDto>> SubmitPaymentProof([FromForm] SubmitPaymentProofRequest request)
+    {
+        if (!TryGetResidentId(out var residentId) || !TryGetUnitId(out var unitId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _paymentProofService.SubmitAsync(residentId, unitId, request.File, request.BillIds);
+
+        return result.Status switch
+        {
+            PaymentProofSubmitStatus.Success => StatusCode(StatusCodes.Status201Created, result.Proof),
+            PaymentProofSubmitStatus.StorageUploadFailed => StatusCode(StatusCodes.Status502BadGateway, new { message = result.ErrorMessage }),
+            _ => BadRequest(new { message = result.ErrorMessage }),
+        };
+    }
+
+    [HttpGet("payment-proofs")]
+    public async Task<ActionResult<List<PaymentProofDto>>> GetPaymentProofs()
+    {
+        if (!TryGetResidentId(out var residentId))
+        {
+            return Unauthorized();
+        }
+
+        var history = await _paymentProofService.GetHistoryAsync(residentId);
+        return Ok(history);
     }
 
     [HttpGet("dashboard")]

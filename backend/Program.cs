@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -43,6 +44,16 @@ builder.Services.AddScoped<IBillService, BillService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IPaymentProofRepository, PaymentProofRepository>();
+builder.Services.AddScoped<IPaymentProofService, PaymentProofService>();
+
+builder.Services.AddHttpClient<ISupabaseStorageService, SupabaseStorageService>((sp, client) =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var serviceRoleKey = config["Supabase:ServiceRoleKey"];
+    client.DefaultRequestHeaders.Add("apikey", serviceRoleKey);
+    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", serviceRoleKey);
+});
 
 var app = builder.Build();
 
