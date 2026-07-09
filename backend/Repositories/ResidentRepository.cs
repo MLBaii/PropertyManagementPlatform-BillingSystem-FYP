@@ -23,6 +23,7 @@ public class ResidentRepository : IResidentRepository
         return _context.Residents
             .Include(r => r.Unit)
             .ThenInclude(u => u.Property)
+            .Include(r => r.Account)
             .FirstOrDefaultAsync(r => r.ResidentId == residentId);
     }
 

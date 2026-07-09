@@ -6,23 +6,21 @@ import { fonts } from '@/theme/typography';
 
 type Props = {
   name: string;
+  size?: number;
 };
 
-export function Avatar({ name }: Props) {
+export function Avatar({ name, size = 64 }: Props) {
   const initial = name.trim().charAt(0).toUpperCase() || '?';
 
   return (
-    <View style={styles.avatar}>
-      <Text style={styles.initial}>{initial}</Text>
+    <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}>
+      <Text style={[styles.initial, { fontSize: size * 0.375 }]}>{initial}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
     backgroundColor: colors.accentSoft,
     borderWidth: 1,
     borderColor: colors.accentLine,
@@ -31,7 +29,6 @@ const styles = StyleSheet.create({
   },
   initial: {
     fontFamily: fonts.heading,
-    fontSize: 24,
     color: colors.accent,
   },
 });

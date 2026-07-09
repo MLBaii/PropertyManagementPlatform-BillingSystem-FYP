@@ -84,6 +84,18 @@ public static class DbSeeder
         mayBill.BillLineItems.Add(new BillLineItem { Description = "Maintenance Fee", Amount = 300.00m, LineItemType = "Charge" });
         mayBill.BillLineItems.Add(new BillLineItem { Description = "Sinking Fund", Amount = 50.00m, LineItemType = "Charge" });
 
+        // Backs mayBill's "Paid" status with an actual Payment row — needed for the
+        // Dashboard's Total Paid figure and Recent Activity feed (UC-104) to have real
+        // data, since nothing previously created one despite the bill being marked Paid.
+        var mayPayment = new Payment
+        {
+            Bill = mayBill,
+            Amount = 350.00m,
+            PaymentDate = new DateTime(2026, 6, 5, 0, 0, 0, DateTimeKind.Utc),
+            Channel = "Bank Transfer",
+            Status = "Confirmed",
+        };
+
         // Overdue example with a richer line-item breakdown (brought-forward + late
         // interest), mirroring Figure 4.11 of the mockups so the Bill Detail screen
         // has real data to match against.
@@ -109,6 +121,7 @@ public static class DbSeeder
         context.Properties.Add(property);
         context.Residents.AddRange(residentA, residentB);
         context.Bills.AddRange(juneBill, mayBill, aprilBill);
+        context.Payments.Add(mayPayment);
 
         await context.SaveChangesAsync();
     }
@@ -117,6 +130,7 @@ public static class DbSeeder
     // e.g. after changing what gets seeded. Dev-only — never call this outside --reseed.
     public static async Task ClearAsync(AppDbContext context)
     {
+        context.Payments.RemoveRange(context.Payments);
         context.BillLineItems.RemoveRange(context.BillLineItems);
         context.Bills.RemoveRange(context.Bills);
         context.Residents.RemoveRange(context.Residents);

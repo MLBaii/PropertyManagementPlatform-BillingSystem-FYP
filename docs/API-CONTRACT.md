@@ -13,7 +13,7 @@
 | Authentication | `/api/auth/resident` | POST, GET | Login, token refresh, logout, password reset |
 | Profile | `/api/residents/profile` | GET, PUT | View/update profile, notification prefs, password |
 | Bills | `/api/residents/bills` | GET | Bill list + itemised bill detail, unit-scoped |
-| Account | `/api/residents/account` | GET | Dashboard data, running balance, transaction history |
+| Account | `/api/residents/dashboard` | GET | Dashboard data, running balance, transaction history — implemented as `/dashboard` rather than `/account` (see below) |
 | Payment Proof | `/api/residents/payment-proofs` | POST, GET | Upload proof, tag to bills, retrieve status |
 | Disputes | `/api/residents/disputes` | POST, GET | Submit dispute, history, admin response |
 | Notifications | `/api/residents/notifications` | POST, GET, PUT | Register push token, history, mark read |
@@ -125,3 +125,54 @@ Response `200` — same fields as the list, plus the itemised line items:
 ```
 `404` if the bill doesn't exist **or** belongs to a different unit — deliberately not distinguished, to avoid
 confirming a `billId` belongs to someone else.
+
+### Dashboard (UC-104) — implemented
+
+`[Authorize]`, scoped to the JWT's `ResidentId` **and** `UnitId` claims. Route is `/api/residents/dashboard`
+(the endpoint-group table above originally sketched `/api/residents/account`; renamed to `/dashboard` to
+match what this screen actually shows — an account-scoped summary is still exactly what's returned).
+
+#### `GET /api/residents/dashboard`
+Response `200`:
+```json
+{
+  "unitNumber": "A-01-01",
+  "propertyName": "Skyview Residence",
+  "totalOutstanding": 770.50,
+  "totalPaid": 350.00,
+  "creditBalance": 0,
+  "recentActivity": [
+    {
+      "type": "PaymentConfirmed",
+      "date": "2026-06-05T00:00:00Z",
+      "description": "Payment confirmed",
+      "reference": "May 2026 bill",
+      "amount": 350.00
+    },
+    {
+      "type": "BillIssued",
+      "date": "2026-06-01T00:00:00Z",
+      "description": "Bill issued · June 2026",
+      "reference": "SKV-2026-06-A0101",
+      "amount": 350.00
+    },
+    {
+      "type": "BillIssued",
+      "date": "2026-05-01T00:00:00Z",
+      "description": "Bill issued · May 2026",
+      "reference": "SKV-2026-05-A0101",
+      "amount": 350.00
+    }
+  ]
+}
+```
+`totalOutstanding` is the sum of `Bill.OutstandingBalance` across the unit's bills — computed live rather
+than trusted from `Account.CumulativeArrears`, since nothing in this project keeps that column in sync as
+bills are added (same reasoning as `BillService.ComputeEffectiveStatus` for "Overdue"). `totalPaid` is the
+sum of `Payment.Amount` for the unit's `Status = "Confirmed"` payments. `creditBalance` is
+`Account.CreditBalance`, trusted as stored — nothing else in this schema computes it.
+
+`recentActivity` merges bill-issued and payment-confirmed events by date, most recent first, capped at 3.
+`type` is `"BillIssued"` or `"PaymentConfirmed"` — the frontend uses it to pick the sign/icon/color, since
+the API doesn't format that presentational detail itself. `reference` is the bill's reference number for a
+`BillIssued` entry, or `"{billing period} bill"` for a `PaymentConfirmed` entry.

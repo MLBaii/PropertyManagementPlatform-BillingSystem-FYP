@@ -12,11 +12,25 @@ public class ResidentsController : ControllerBase
 {
     private readonly IBillService _billService;
     private readonly IProfileService _profileService;
+    private readonly IDashboardService _dashboardService;
 
-    public ResidentsController(IBillService billService, IProfileService profileService)
+    public ResidentsController(IBillService billService, IProfileService profileService, IDashboardService dashboardService)
     {
         _billService = billService;
         _profileService = profileService;
+        _dashboardService = dashboardService;
+    }
+
+    [HttpGet("dashboard")]
+    public async Task<ActionResult<DashboardDto>> GetDashboard()
+    {
+        if (!TryGetResidentId(out var residentId) || !TryGetUnitId(out var unitId))
+        {
+            return Unauthorized();
+        }
+
+        var dashboard = await _dashboardService.GetDashboardAsync(residentId, unitId);
+        return dashboard is null ? NotFound(new { message = "Resident not found." }) : Ok(dashboard);
     }
 
     [HttpGet("bills")]
