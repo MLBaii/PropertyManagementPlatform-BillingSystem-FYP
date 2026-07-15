@@ -22,11 +22,9 @@ export function BillTagRow({ referenceNumber, billingPeriod, amount, checked, on
       </View>
       <View style={styles.textCol}>
         <Text style={styles.reference}>{referenceNumber}</Text>
-        <Text style={styles.period}>
-          {formatBillingPeriod(billingPeriod)} · RM {amount.toFixed(2)}
-        </Text>
+        <Text style={styles.period}>{formatBillingPeriod(billingPeriod)}</Text>
       </View>
-      {checked && <Text style={styles.amount}>RM {amount.toFixed(2)}</Text>}
+      <Text style={[styles.amount, checked && styles.amountSelected]}>RM {amount.toFixed(2)}</Text>
     </Pressable>
   );
 }
@@ -78,6 +76,9 @@ const styles = StyleSheet.create({
   amount: {
     fontFamily: fonts.mono,
     fontSize: 12,
+    color: colors.textSecondary,
+  },
+  amountSelected: {
     color: colors.accent,
   },
 });

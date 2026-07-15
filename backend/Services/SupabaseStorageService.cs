@@ -18,13 +18,15 @@ public class SupabaseStorageService : ISupabaseStorageService
     private readonly HttpClient _httpClient;
     private readonly string _supabaseUrl;
     private readonly string _bucket;
+    private readonly ILogger<SupabaseStorageService> _logger;
 
-    public SupabaseStorageService(HttpClient httpClient, IConfiguration configuration)
+    public SupabaseStorageService(HttpClient httpClient, IConfiguration configuration, ILogger<SupabaseStorageService> logger)
     {
         _httpClient = httpClient;
         _supabaseUrl = (configuration["Supabase:Url"] ?? throw new InvalidOperationException("Supabase:Url is not configured."))
             .TrimEnd('/');
         _bucket = configuration["Supabase:StorageBucket"] ?? "payment-proofs";
+        _logger = logger;
     }
 
     public async Task<string> UploadAsync(IFormFile file, int residentId)
@@ -43,6 +45,9 @@ public class SupabaseStorageService : ISupabaseStorageService
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync();
+            _logger.LogError(
+                "Supabase Storage upload failed for object {ObjectPath}: {StatusCode} {Body}",
+                objectPath, (int)response.StatusCode, error);
             throw new InvalidOperationException($"Supabase Storage upload failed ({(int)response.StatusCode}): {error}");
         }
 
@@ -78,15 +83,29 @@ public class SupabaseStorageService : ISupabaseStorageService
             using var content = new StringContent(payload, Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync(createUrl, content);
 
-            if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.BadRequest)
+            if (response.IsSuccessStatusCode)
             {
-                // BadRequest here almost always means "Bucket already exists" — Supabase
-                // doesn't expose a distinct status code for it, so treat both as success.
                 _bucketEnsured = true;
                 return;
             }
 
             var error = await response.Content.ReadAsStringAsync();
+
+            // Supabase reports "bucket already exists" as an HTTP 400 with this specific body
+            // rather than a dedicated status code — but a 400 can just as easily mean something
+            // else went wrong, so only THIS body counts as success. Treating every 400 as
+            // "already exists" previously meant a genuine failure (e.g. a cold-starting Supabase
+            // project timing out) got swallowed, _bucketEnsured got stuck true for the rest of
+            // the process's life, and every upload after it failed with "Bucket not found".
+            if (response.StatusCode == HttpStatusCode.BadRequest && IsBucketAlreadyExistsError(error))
+            {
+                _bucketEnsured = true;
+                return;
+            }
+
+            _logger.LogError(
+                "Could not create Supabase Storage bucket '{Bucket}': {StatusCode} {Body}",
+                _bucket, (int)response.StatusCode, error);
             throw new InvalidOperationException($"Could not create Supabase Storage bucket '{_bucket}': {error}");
         }
         finally
@@ -95,9 +114,32 @@ public class SupabaseStorageService : ISupabaseStorageService
         }
     }
 
+    // Matches Supabase's actual "already exists" response body:
+    // {"statusCode":"409","error":"Duplicate","message":"The resource already exists"}
+    private static bool IsBucketAlreadyExistsError(string responseBody)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(responseBody);
+            return doc.RootElement.TryGetProperty("error", out var errorProp)
+                && errorProp.GetString() == "Duplicate";
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
     private class CreateBucketRequest
     {
+        // Supabase's Storage API requires these lowercase — System.Text.Json's default
+        // serializer emits the C# PascalCase names verbatim, which Supabase silently
+        // rejects with "body must have required property 'name'" (still an HTTP 400,
+        // easy to mistake for the "bucket already exists" 400).
+        [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;
+
+        [JsonPropertyName("id")]
         public string Id { get; set; } = string.Empty;
 
         [JsonPropertyName("public")]

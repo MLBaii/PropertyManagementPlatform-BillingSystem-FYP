@@ -5,6 +5,8 @@ namespace PropertyBill.Api.Services;
 public enum PaymentProofSubmitStatus
 {
     Success,
+    NoFiles,
+    TooManyFiles,
     InvalidFile,
     NoBillsTagged,
     BillsNotFound,
@@ -20,11 +22,25 @@ public class PaymentProofSubmitResult
     public static PaymentProofSubmitResult Success(PaymentProofDto proof) =>
         new() { Status = PaymentProofSubmitStatus.Success, Proof = proof };
 
+    public static PaymentProofSubmitResult NoFiles() =>
+        new()
+        {
+            Status = PaymentProofSubmitStatus.NoFiles,
+            ErrorMessage = "Attach at least one file.",
+        };
+
+    public static PaymentProofSubmitResult TooManyFiles() =>
+        new()
+        {
+            Status = PaymentProofSubmitStatus.TooManyFiles,
+            ErrorMessage = "You can upload up to 3 files.",
+        };
+
     public static PaymentProofSubmitResult InvalidFile() =>
         new()
         {
             Status = PaymentProofSubmitStatus.InvalidFile,
-            ErrorMessage = "File must be JPG, PNG, or PDF and not exceed 5 MB.",
+            ErrorMessage = "Each file must be JPG, PNG, or PDF and not exceed 5 MB.",
         };
 
     public static PaymentProofSubmitResult NoBillsTagged() =>

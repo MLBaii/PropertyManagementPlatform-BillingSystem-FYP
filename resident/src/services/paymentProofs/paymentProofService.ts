@@ -10,11 +10,16 @@ export type TaggedBill = {
   amount: number;
 };
 
-export type PaymentProof = {
+export type ProofFile = {
   proofId: number;
   fileUrl: string;
   fileType: string;
   fileSize: number;
+};
+
+export type PaymentProof = {
+  proofId: number;
+  files: ProofFile[];
   status: ProofStatus;
   adminRemarks: string | null;
   submittedAt: string;
@@ -27,15 +32,18 @@ export async function getPaymentProofs(): Promise<PaymentProof[]> {
   return data;
 }
 
-export async function submitPaymentProof(file: PickedFile, billIds: number[]): Promise<PaymentProof> {
+export async function submitPaymentProof(files: PickedFile[], billIds: number[]): Promise<PaymentProof> {
   const formData = new FormData();
   // React Native's FormData accepts this {uri, name, type} shape for file parts — not the
-  // spec-compliant web File API, but it's what RN's networking layer expects.
-  formData.append('File', {
-    uri: file.uri,
-    name: file.name,
-    type: file.mimeType,
-  } as unknown as Blob);
+  // spec-compliant web File API, but it's what RN's networking layer expects. Repeating the
+  // 'Files' key binds to the backend's List<IFormFile> Files.
+  files.forEach((file) => {
+    formData.append('Files', {
+      uri: file.uri,
+      name: file.name,
+      type: file.mimeType,
+    } as unknown as Blob);
+  });
   billIds.forEach((billId) => formData.append('BillIds', String(billId)));
 
   // Deliberately no explicit Content-Type header — axios/RN needs to generate the multipart

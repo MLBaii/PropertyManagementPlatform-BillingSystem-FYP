@@ -22,17 +22,18 @@ public class PaymentProofRepository : IPaymentProofRepository
             .ToListAsync();
     }
 
-    public async Task<PaymentProof> CreateAsync(PaymentProof proof, List<Bill> taggedBills)
+    public async Task<List<PaymentProof>> CreateAsync(List<PaymentProof> proofs, List<Bill> taggedBills)
     {
-        _context.PaymentProofs.Add(proof);
+        _context.PaymentProofs.AddRange(proofs);
 
+        var primaryProof = proofs[0];
         foreach (var bill in taggedBills)
         {
             bill.Status = "ProofSubmitted";
             _context.Payments.Add(new Payment
             {
                 Bill = bill,
-                PaymentProof = proof,
+                PaymentProof = primaryProof,
                 Amount = bill.OutstandingBalance,
                 PaymentDate = DateTime.UtcNow,
                 Channel = "Proof Upload",
@@ -41,7 +42,7 @@ public class PaymentProofRepository : IPaymentProofRepository
         }
 
         await _context.SaveChangesAsync();
-        return proof;
+        return proofs;
     }
 
     public Task<List<PaymentProof>> GetByResidentIdAsync(int residentId)

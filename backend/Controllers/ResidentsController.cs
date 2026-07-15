@@ -28,7 +28,7 @@ public class ResidentsController : ControllerBase
     }
 
     [HttpPost("payment-proofs")]
-    [RequestSizeLimit(6 * 1024 * 1024)]
+    [RequestSizeLimit(16 * 1024 * 1024)] // up to 3 files @ 5MB each + multipart overhead
     public async Task<ActionResult<PaymentProofDto>> SubmitPaymentProof([FromForm] SubmitPaymentProofRequest request)
     {
         if (!TryGetResidentId(out var residentId) || !TryGetUnitId(out var unitId))
@@ -36,7 +36,7 @@ public class ResidentsController : ControllerBase
             return Unauthorized();
         }
 
-        var result = await _paymentProofService.SubmitAsync(residentId, unitId, request.File, request.BillIds);
+        var result = await _paymentProofService.SubmitAsync(residentId, unitId, request.Files, request.BillIds);
 
         return result.Status switch
         {

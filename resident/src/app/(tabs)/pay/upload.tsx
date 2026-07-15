@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BillTagRow } from '@/components/pay/BillTagRow';
 import { ProofStatusBadge } from '@/components/pay/ProofStatusBadge';
@@ -25,13 +25,17 @@ import {
 } from '@/utils/proofFilePicker';
 
 type Step = 1 | 2 | 'success';
+type FileSource = 'camera' | 'library' | 'files';
+
+const MAX_FILES = 3;
 
 export default function UploadProofScreen() {
   const { billId } = useLocalSearchParams<{ billId?: string }>();
   const [step, setStep] = useState<Step>(1);
 
-  const [file, setFile] = useState<PickedFile | null>(null);
+  const [files, setFiles] = useState<PickedFile[]>([]);
   const [fileError, setFileError] = useState<string | undefined>();
+  const [lastSource, setLastSource] = useState<FileSource | undefined>();
 
   const [bills, setBills] = useState<Bill[]>([]);
   const [isLoadingBills, setIsLoadingBills] = useState(true);
@@ -80,30 +84,45 @@ export default function UploadProofScreen() {
     setSelectedBillIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
-  const handlePick = async (source: () => Promise<PickedFile | null>) => {
+  const atFileLimit = files.length >= MAX_FILES;
+
+  const handlePick = async (source: () => Promise<PickedFile | null>, sourceKey: FileSource) => {
     setFileError(undefined);
+    if (atFileLimit) {
+      setFileError(`You can upload up to ${MAX_FILES} files.`);
+      return;
+    }
     try {
       const picked = await source();
       if (!picked) {
         return;
       }
-      setFile(picked);
-      setFileError(isValidProofFile(picked) ? undefined : PROOF_FILE_ERROR_MESSAGE);
+      if (!isValidProofFile(picked)) {
+        setFileError(PROOF_FILE_ERROR_MESSAGE);
+        return;
+      }
+      setFiles((prev) => [...prev, picked]);
+      setLastSource(sourceKey);
     } catch (err) {
       setFileError(err instanceof Error ? err.message : 'Could not select a file. Please try again.');
     }
   };
 
-  const canContinue = Boolean(file) && !fileError && selectedBillIds.length > 0;
+  const removeFile = (index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+    setFileError(undefined);
+  };
+
+  const canContinue = files.length > 0 && selectedBillIds.length > 0;
 
   const handleSubmit = async () => {
-    if (!file) {
+    if (files.length === 0) {
       return;
     }
     setSubmitError(undefined);
     setIsSubmitting(true);
     try {
-      const proof = await submitPaymentProof(file, selectedBillIds);
+      const proof = await submitPaymentProof(files, selectedBillIds);
       setSubmittedProof(proof);
       setStep('success');
     } catch {
@@ -129,6 +148,29 @@ export default function UploadProofScreen() {
     );
   }
 
+  const renderFileRow = (file: PickedFile, index: number, removable: boolean) => (
+    <Card key={`${file.uri}-${index}`} style={styles.previewCard}>
+      <View style={styles.previewIcon}>
+        <Feather
+          name={file.mimeType === 'application/pdf' ? 'file-text' : 'image'}
+          size={18}
+          color={colors.accent}
+        />
+      </View>
+      <View style={styles.previewTextCol}>
+        <Text style={styles.previewName} numberOfLines={1}>
+          {file.name}
+        </Text>
+        <Text style={styles.previewMeta}>{file.size !== null ? formatFileSize(file.size) : ''}</Text>
+      </View>
+      {removable && (
+        <Pressable onPress={() => removeFile(index)} hitSlop={8} style={styles.removeButton}>
+          <Feather name="x" size={16} color={colors.textSecondary} />
+        </Pressable>
+      )}
+    </Card>
+  );
+
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -140,30 +182,38 @@ export default function UploadProofScreen() {
         {step === 1 ? (
           <>
             <View style={styles.sourceRow}>
-              <SourceButton icon="camera" label="Camera" onPress={() => handlePick(pickFromCamera)} />
-              <SourceButton icon="image" label="Photo Library" onPress={() => handlePick(pickFromLibrary)} />
-              <SourceButton icon="file" label="Files" onPress={() => handlePick(pickFromFiles)} />
+              <SourceButton
+                icon="camera"
+                label="Camera"
+                selected={lastSource === 'camera'}
+                disabled={atFileLimit}
+                onPress={() => handlePick(pickFromCamera, 'camera')}
+              />
+              <SourceButton
+                icon="image"
+                label="Photo Library"
+                selected={lastSource === 'library'}
+                disabled={atFileLimit}
+                onPress={() => handlePick(pickFromLibrary, 'library')}
+              />
+              <SourceButton
+                icon="file"
+                label="Files"
+                selected={lastSource === 'files'}
+                disabled={atFileLimit}
+                onPress={() => handlePick(pickFromFiles, 'files')}
+              />
             </View>
 
-            {file && (
-              <Card style={styles.previewCard}>
-                <View style={styles.previewIcon}>
-                  <Feather
-                    name={file.mimeType === 'application/pdf' ? 'file-text' : 'image'}
-                    size={18}
-                    color={colors.accent}
-                  />
-                </View>
-                <View style={styles.previewTextCol}>
-                  <Text style={styles.previewName} numberOfLines={1}>
-                    {file.name}
-                  </Text>
-                  <Text style={[styles.previewMeta, fileError && styles.previewMetaError]}>
-                    {file.size !== null ? `${formatFileSize(file.size)} · ` : ''}
-                    {fileError ? fileError : 'ready to submit'}
-                  </Text>
-                </View>
-              </Card>
+            {files.length > 0 && (
+              <View style={styles.fileList}>{files.map((file, index) => renderFileRow(file, index, true))}</View>
+            )}
+
+            {fileError && <Text style={styles.errorText}>{fileError}</Text>}
+            {atFileLimit && !fileError && (
+              <Text style={styles.limitNote}>
+                Maximum of {MAX_FILES} files reached — remove one to add another.
+              </Text>
             )}
 
             <Text style={styles.sectionEyebrow}>Tag to bill(s)</Text>
@@ -194,23 +244,7 @@ export default function UploadProofScreen() {
           </>
         ) : (
           <>
-            {file && (
-              <Card style={styles.previewCard}>
-                <View style={styles.previewIcon}>
-                  <Feather
-                    name={file.mimeType === 'application/pdf' ? 'file-text' : 'image'}
-                    size={18}
-                    color={colors.accent}
-                  />
-                </View>
-                <View style={styles.previewTextCol}>
-                  <Text style={styles.previewName} numberOfLines={1}>
-                    {file.name}
-                  </Text>
-                  <Text style={styles.previewMeta}>{file.size !== null ? formatFileSize(file.size) : ''}</Text>
-                </View>
-              </Card>
-            )}
+            <View style={styles.fileList}>{files.map((file, index) => renderFileRow(file, index, false))}</View>
 
             <Text style={styles.sectionEyebrow}>Tagged bills</Text>
             <Card style={styles.summaryCard}>
@@ -275,11 +309,14 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 16,
   },
+  fileList: {
+    marginBottom: 8,
+  },
   previewCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 18,
+    marginBottom: 10,
   },
   previewIcon: {
     width: 44,
@@ -303,8 +340,18 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 2,
   },
-  previewMetaError: {
-    color: colors.danger,
+  removeButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  limitNote: {
+    fontFamily: fonts.body,
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginBottom: 12,
   },
   sectionEyebrow: {
     fontFamily: fonts.body,

@@ -25,19 +25,35 @@ public class PaymentProofService : IPaymentProofService
     };
 
     private const long MaxFileSizeBytes = 5 * 1024 * 1024;
+    private const int MaxFileCount = 3;
 
     private readonly IPaymentProofRepository _paymentProofRepository;
     private readonly ISupabaseStorageService _storageService;
+    private readonly ILogger<PaymentProofService> _logger;
 
-    public PaymentProofService(IPaymentProofRepository paymentProofRepository, ISupabaseStorageService storageService)
+    public PaymentProofService(
+        IPaymentProofRepository paymentProofRepository,
+        ISupabaseStorageService storageService,
+        ILogger<PaymentProofService> logger)
     {
         _paymentProofRepository = paymentProofRepository;
         _storageService = storageService;
+        _logger = logger;
     }
 
-    public async Task<PaymentProofSubmitResult> SubmitAsync(int residentId, int unitId, IFormFile? file, List<int> billIds)
+    public async Task<PaymentProofSubmitResult> SubmitAsync(int residentId, int unitId, List<IFormFile>? files, List<int> billIds)
     {
-        if (!IsValidFile(file))
+        if (files is null || files.Count == 0)
+        {
+            return PaymentProofSubmitResult.NoFiles();
+        }
+
+        if (files.Count > MaxFileCount)
+        {
+            return PaymentProofSubmitResult.TooManyFiles();
+        }
+
+        if (!files.All(IsValidFile))
         {
             return PaymentProofSubmitResult.InvalidFile();
         }
@@ -54,34 +70,51 @@ public class PaymentProofService : IPaymentProofService
             return PaymentProofSubmitResult.BillsNotFound();
         }
 
-        string fileUrl;
+        // Upload every file before creating any DB rows — if file 2 of 3 fails, we don't want
+        // a partially-created submission (matches the "no partial writes" guarantee the
+        // single-file version already had).
+        var uploaded = new List<(string Url, string Type, long Size)>();
         try
         {
-            fileUrl = await _storageService.UploadAsync(file!, residentId);
+            foreach (var file in files)
+            {
+                var url = await _storageService.UploadAsync(file, residentId);
+                uploaded.Add((url, file.ContentType, file.Length));
+            }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Payment proof upload failed for resident {ResidentId} ({FileCount} file(s))", residentId, files.Count);
             return PaymentProofSubmitResult.StorageUploadFailed();
         }
 
-        var proof = new PaymentProof
+        // One PaymentProof row per file (fits the ERD's single FileUrl/FileType/FileSize
+        // columns with no migration) sharing one SubmittedAt instant, captured once here —
+        // GetHistoryAsync groups rows by exact SubmittedAt equality to reconstruct "this
+        // submission" without adding a batch/group column the ERD doesn't have.
+        var submittedAt = DateTime.UtcNow;
+        var proofs = uploaded.Select(u => new PaymentProof
         {
             ResidentId = residentId,
-            FileUrl = fileUrl,
-            FileType = file!.ContentType,
-            FileSize = file.Length,
+            FileUrl = u.Url,
+            FileType = u.Type,
+            FileSize = u.Size,
             Status = "Pending",
-            SubmittedAt = DateTime.UtcNow,
-        };
+            SubmittedAt = submittedAt,
+        }).ToList();
 
-        var created = await _paymentProofRepository.CreateAsync(proof, taggedBills);
-        return PaymentProofSubmitResult.Success(ToDto(created, taggedBills));
+        var created = await _paymentProofRepository.CreateAsync(proofs, taggedBills);
+        return PaymentProofSubmitResult.Success(ToDtoFromCreate(created, taggedBills));
     }
 
     public async Task<List<PaymentProofDto>> GetHistoryAsync(int residentId)
     {
         var proofs = await _paymentProofRepository.GetByResidentIdAsync(residentId);
-        return proofs.Select(p => ToDto(p, null)).ToList();
+        return proofs
+            .GroupBy(p => p.SubmittedAt)
+            .OrderByDescending(g => g.Key)
+            .Select(g => ToDtoFromHistoryGroup(g.ToList()))
+            .ToList();
     }
 
     private static bool IsValidFile(IFormFile? file)
@@ -96,35 +129,58 @@ public class PaymentProofService : IPaymentProofService
     }
 
     // `taggedBills` is passed straight through on the create path (already loaded, avoids a
-    // redundant query); on the history path it's null and TaggedBills comes from `proof.Payments`
-    // (Included by the repository) instead.
-    private static PaymentProofDto ToDto(PaymentProof proof, List<Bill>? taggedBills)
+    // redundant query and doesn't depend on EF's navigation-fixup timing).
+    private static PaymentProofDto ToDtoFromCreate(List<PaymentProof> proofs, List<Bill> taggedBills)
     {
+        var primary = proofs[0];
         return new PaymentProofDto
         {
-            ProofId = proof.ProofId,
-            FileUrl = proof.FileUrl,
-            FileType = proof.FileType,
-            FileSize = proof.FileSize,
-            Status = proof.Status,
-            AdminRemarks = proof.AdminRemarks,
-            SubmittedAt = proof.SubmittedAt,
-            ReviewedAt = proof.ReviewedAt,
-            TaggedBills = taggedBills is not null
-                ? taggedBills.Select(b => new TaggedBillDto
-                {
-                    BillId = b.BillId,
-                    ReferenceNumber = b.ReferenceNumber,
-                    BillingPeriod = b.BillingPeriod,
-                    Amount = b.OutstandingBalance,
-                }).ToList()
-                : proof.Payments.Select(p => new TaggedBillDto
-                {
-                    BillId = p.BillId,
-                    ReferenceNumber = p.Bill.ReferenceNumber,
-                    BillingPeriod = p.Bill.BillingPeriod,
-                    Amount = p.Amount,
-                }).ToList(),
+            ProofId = primary.ProofId,
+            Files = proofs.Select(ToFileDto).ToList(),
+            Status = primary.Status,
+            AdminRemarks = primary.AdminRemarks,
+            SubmittedAt = primary.SubmittedAt,
+            ReviewedAt = primary.ReviewedAt,
+            TaggedBills = taggedBills.Select(b => new TaggedBillDto
+            {
+                BillId = b.BillId,
+                ReferenceNumber = b.ReferenceNumber,
+                BillingPeriod = b.BillingPeriod,
+                Amount = b.OutstandingBalance,
+            }).ToList(),
         };
     }
+
+    // On the history path, TaggedBills come from the primary proof's Payments (Included by
+    // the repository) — only the primary (first-created) row in a submission is linked to
+    // Payment rows, per CreateAsync.
+    private static PaymentProofDto ToDtoFromHistoryGroup(List<PaymentProof> groupProofs)
+    {
+        var ordered = groupProofs.OrderBy(p => p.ProofId).ToList();
+        var primary = ordered[0];
+        return new PaymentProofDto
+        {
+            ProofId = primary.ProofId,
+            Files = ordered.Select(ToFileDto).ToList(),
+            Status = primary.Status,
+            AdminRemarks = primary.AdminRemarks,
+            SubmittedAt = primary.SubmittedAt,
+            ReviewedAt = primary.ReviewedAt,
+            TaggedBills = primary.Payments.Select(p => new TaggedBillDto
+            {
+                BillId = p.BillId,
+                ReferenceNumber = p.Bill.ReferenceNumber,
+                BillingPeriod = p.Bill.BillingPeriod,
+                Amount = p.Amount,
+            }).ToList(),
+        };
+    }
+
+    private static PaymentProofFileDto ToFileDto(PaymentProof p) => new()
+    {
+        ProofId = p.ProofId,
+        FileUrl = p.FileUrl,
+        FileType = p.FileType,
+        FileSize = p.FileSize,
+    };
 }
