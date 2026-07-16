@@ -51,6 +51,8 @@ builder.Services.AddScoped<INotificationTokenRepository, NotificationTokenReposi
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<INotificationTokenService, NotificationTokenService>();
 builder.Services.AddScoped<INotificationSendingService, NotificationSendingService>();
+builder.Services.AddScoped<IDisputeRepository, DisputeRepository>();
+builder.Services.AddScoped<IDisputeService, DisputeService>();
 
 builder.Services.AddHttpClient<ISupabaseStorageService, SupabaseStorageService>((sp, client) =>
 {

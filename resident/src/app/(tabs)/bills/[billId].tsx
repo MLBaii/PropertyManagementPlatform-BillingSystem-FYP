@@ -136,7 +136,14 @@ export default function BillDetailScreen() {
           />
           <GhostButton label="Download PDF" onPress={handleDownloadPdf} loading={isGeneratingPdf} />
           {pdfError && <Text style={styles.pdfError}>{pdfError}</Text>}
-          <Text style={styles.disputeLink}>Dispute This Bill</Text>
+          <Text
+            style={styles.disputeLink}
+            onPress={() =>
+              router.push({ pathname: '/(tabs)/bills/dispute', params: { billId: String(bill.billId) } })
+            }
+          >
+            Dispute This Bill
+          </Text>
         </View>
       </ScrollView>
     </Screen>
@@ -246,6 +253,5 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     paddingTop: 6,
-    opacity: 0.6,
   },
 });

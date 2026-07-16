@@ -13,10 +13,15 @@ Resident-owned: Resident, PaymentProof, Dispute, Notification, NotificationToken
 Shared with admin: Property, Unit, Account, Bill, BillLineItem, Payment
 Admin-owned: BillingItem, UnitBillingRate, AdminUser, AuditLog
 
-## One deliberate addition vs. the ERD
+## Deliberate additions vs. the ERD
 `Resident.IsActive` (boolean) is **not** in the Chapter 4 ERD. It was added to support UC-101
 (resident login) returning HTTP 403 for a disabled account — the ERD has no other column that
 captures that state. Flagged here for disclosure in Chapter 5/7.
+
+`Dispute.AdminResponse` (text, nullable) is **not** in the Chapter 4 ERD either. Added to support
+UC-110 (view dispute history) — Figure 4.13's own mockup caption says the dispute screen shows
+"the dispute status and admin response," but the ERD's `Dispute` table has no column for one
+(unlike `PaymentProof`, which already has `AdminRemarks`). Same disclosure category as above.
 
 ## Key relationships
 - Property 1—* Unit
@@ -137,9 +142,10 @@ the relevant Payment(s) during review.
 | BillId | int | FK → Bill |
 | ResidentId | int | FK → Resident |
 | Reason | text | |
-| Status | text | |
+| Status | text | "Open" \| "UnderReview" \| "Resolved" \| "Rejected" |
 | SubmittedAt | timestamptz | |
 | ResolvedAt | timestamptz | nullable |
+| AdminResponse | text | nullable — not in the ERD, see "Deliberate additions" above |
 
 ### Notification
 | Column | Type | Notes |

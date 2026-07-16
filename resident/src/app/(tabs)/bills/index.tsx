@@ -73,8 +73,13 @@ export default function BillsListScreen() {
         ListHeaderComponent={
           <View>
             <View style={styles.header}>
-              <Text style={styles.eyebrow}>{bills.length} bills</Text>
-              <Text style={styles.title}>Bills</Text>
+              <View>
+                <Text style={styles.eyebrow}>{bills.length} bills</Text>
+                <Text style={styles.title}>Bills</Text>
+              </View>
+              <Text style={styles.disputeHistoryLink} onPress={() => router.push('/(tabs)/bills/disputes')}>
+                Dispute History
+              </Text>
             </View>
             <View style={styles.filterWrap}>
               <BillFilterRow value={filter} onChange={setFilter} />
@@ -119,8 +124,17 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
     marginVertical: 4,
     marginBottom: 14,
+  },
+  disputeHistoryLink: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 12,
+    color: colors.accent,
+    marginBottom: 3,
   },
   eyebrow: {
     fontFamily: fonts.body,

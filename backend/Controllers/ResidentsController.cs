@@ -16,6 +16,7 @@ public class ResidentsController : ControllerBase
     private readonly IPaymentProofService _paymentProofService;
     private readonly INotificationTokenService _notificationTokenService;
     private readonly INotificationService _notificationService;
+    private readonly IDisputeService _disputeService;
 
     public ResidentsController(
         IBillService billService,
@@ -23,7 +24,8 @@ public class ResidentsController : ControllerBase
         IDashboardService dashboardService,
         IPaymentProofService paymentProofService,
         INotificationTokenService notificationTokenService,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IDisputeService disputeService)
     {
         _billService = billService;
         _profileService = profileService;
@@ -31,6 +33,7 @@ public class ResidentsController : ControllerBase
         _paymentProofService = paymentProofService;
         _notificationTokenService = notificationTokenService;
         _notificationService = notificationService;
+        _disputeService = disputeService;
     }
 
     [HttpPost("payment-proofs")]
@@ -213,6 +216,49 @@ public class ResidentsController : ControllerBase
 
         await _notificationService.MarkAllAsReadAsync(residentId);
         return NoContent();
+    }
+
+    [HttpPost("disputes")]
+    public async Task<ActionResult<DisputeDto>> SubmitDispute([FromBody] SubmitDisputeRequest request)
+    {
+        if (!TryGetResidentId(out var residentId) || !TryGetUnitId(out var unitId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _disputeService.SubmitAsync(residentId, unitId, request);
+
+        return result.Status switch
+        {
+            DisputeSubmitStatus.Success => StatusCode(StatusCodes.Status201Created, result.Dispute),
+            DisputeSubmitStatus.BillNotFound => NotFound(new { message = result.ErrorMessage }),
+            DisputeSubmitStatus.ActiveDisputeExists => Conflict(new { message = result.ErrorMessage, dispute = result.Dispute }),
+            _ => BadRequest(new { message = result.ErrorMessage }),
+        };
+    }
+
+    [HttpGet("disputes")]
+    public async Task<ActionResult<List<DisputeDto>>> GetDisputes([FromQuery] string? status)
+    {
+        if (!TryGetResidentId(out var residentId))
+        {
+            return Unauthorized();
+        }
+
+        var disputes = await _disputeService.GetHistoryAsync(residentId, status);
+        return Ok(disputes);
+    }
+
+    [HttpGet("disputes/{id:int}")]
+    public async Task<ActionResult<DisputeDto>> GetDisputeDetail(int id)
+    {
+        if (!TryGetResidentId(out var residentId))
+        {
+            return Unauthorized();
+        }
+
+        var dispute = await _disputeService.GetByIdAsync(id, residentId);
+        return dispute is null ? NotFound(new { message = "Dispute not found." }) : Ok(dispute);
     }
 
     private bool TryGetResidentId(out int residentId)
