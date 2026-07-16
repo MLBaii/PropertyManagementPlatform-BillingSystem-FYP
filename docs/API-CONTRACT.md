@@ -17,7 +17,7 @@
 | Payment Proof | `/api/residents/payment-proofs` | POST, GET | Upload proof, tag to bills, retrieve status |
 | Disputes | `/api/residents/disputes` | POST, GET | Submit dispute, history, admin response |
 | Notifications | `/api/residents/notifications` | POST, GET, PUT | Register push token, history, mark read |
-| Receipts | `/api/residents/receipts/{paymentId}` | GET | Digital receipt data for confirmed payments |
+| Receipts | `/api/residents/receipts` | GET | List + detail (`/{paymentId}`) — digital receipt data for confirmed payments |
 
 ## JSON shapes
 
@@ -376,3 +376,40 @@ development, not driven from a logged-in session. Request:
 `type` defaults to `"BillIssued"`; `title`/`body` default to a canned sample per `type` (matching Figure
 4.14's four example notifications) when omitted; `deepLink` is optional. Response `200`
 `{ "message": "Notification sent." }`, or `404` if `residentId` doesn't exist.
+
+### Digital Receipt (UC-109) — implemented
+
+`[Authorize]`, scoped to the JWT's `UnitId` claim — same unit-scoping as Bills/Dashboard rather than
+resident-scoping like Disputes/Payment Proof, since a receipt is fundamentally tied to a `Payment` → `Bill` →
+`Unit` chain with no `ResidentId` of its own in the ERD (co-residents on one unit would reasonably see the
+same payment history, same as they already see the same bills). Only `Payment` rows with `Status ==
+"Confirmed"` are ever surfaced — a `Pending` payment (e.g. one created by tagging a Payment Proof, per UC-106)
+never appears here or gets a receipt number, since nothing has actually confirmed it was received yet.
+
+`ReceiptNumber` (`"RCPT-{PaymentId:D6}"`, e.g. `"RCPT-000009"`) is **synthetic, not a stored column** —
+`Payment` has no reference-number field in the ERD, so this is derived on every response rather than
+persisted. PDF generation is on-device (`expo-print`, same as UC-105's Bill PDF — no server rendering), so
+`ReceiptDetailDto` only adds `unitNumber`/`propertyName` beyond the list shape (for the PDF masthead); it
+deliberately does **not** include the resident's name — the frontend already has it from `AuthContext`, the
+same source `generateAndShareBillPdf` already uses for the Bill PDF's "Billed To" line.
+
+#### `GET /api/residents/receipts`
+Response `200` — the unit's confirmed payments, most recent first:
+```json
+[
+  {
+    "paymentId": 9,
+    "receiptNumber": "RCPT-000009",
+    "amount": 350.00,
+    "paymentDate": "2026-06-05T00:00:00Z",
+    "channel": "Bank Transfer",
+    "billReferenceNumber": "SKV-2026-05-A0101",
+    "billingPeriod": "2026-05"
+  }
+]
+```
+
+#### `GET /api/residents/receipts/{paymentId}`
+Response `200` — same fields as above plus `unitNumber`/`propertyName`. `404` if the payment doesn't exist,
+belongs to a different unit, or exists but isn't `Confirmed` — all three cases collapse to the same uniform
+`404`, same non-disclosure pattern as Bill Detail and Disputes.

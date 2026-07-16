@@ -21,4 +21,14 @@ public class PaymentRepository : IPaymentRepository
             .OrderByDescending(p => p.PaymentDate)
             .ToListAsync();
     }
+
+    public Task<Payment?> GetConfirmedByIdForUnitAsync(int paymentId, int unitId)
+    {
+        return _context.Payments
+            .Include(p => p.Bill)
+            .ThenInclude(b => b.Unit)
+            .ThenInclude(u => u.Property)
+            .FirstOrDefaultAsync(p =>
+                p.PaymentId == paymentId && p.Bill.UnitId == unitId && p.Status == "Confirmed");
+    }
 }

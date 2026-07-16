@@ -17,6 +17,7 @@ public class ResidentsController : ControllerBase
     private readonly INotificationTokenService _notificationTokenService;
     private readonly INotificationService _notificationService;
     private readonly IDisputeService _disputeService;
+    private readonly IReceiptService _receiptService;
 
     public ResidentsController(
         IBillService billService,
@@ -25,7 +26,8 @@ public class ResidentsController : ControllerBase
         IPaymentProofService paymentProofService,
         INotificationTokenService notificationTokenService,
         INotificationService notificationService,
-        IDisputeService disputeService)
+        IDisputeService disputeService,
+        IReceiptService receiptService)
     {
         _billService = billService;
         _profileService = profileService;
@@ -34,6 +36,7 @@ public class ResidentsController : ControllerBase
         _notificationTokenService = notificationTokenService;
         _notificationService = notificationService;
         _disputeService = disputeService;
+        _receiptService = receiptService;
     }
 
     [HttpPost("payment-proofs")]
@@ -259,6 +262,30 @@ public class ResidentsController : ControllerBase
 
         var dispute = await _disputeService.GetByIdAsync(id, residentId);
         return dispute is null ? NotFound(new { message = "Dispute not found." }) : Ok(dispute);
+    }
+
+    [HttpGet("receipts")]
+    public async Task<ActionResult<List<ReceiptDto>>> GetReceipts()
+    {
+        if (!TryGetUnitId(out var unitId))
+        {
+            return Unauthorized();
+        }
+
+        var receipts = await _receiptService.GetReceiptsAsync(unitId);
+        return Ok(receipts);
+    }
+
+    [HttpGet("receipts/{paymentId:int}")]
+    public async Task<ActionResult<ReceiptDetailDto>> GetReceiptDetail(int paymentId)
+    {
+        if (!TryGetUnitId(out var unitId))
+        {
+            return Unauthorized();
+        }
+
+        var receipt = await _receiptService.GetReceiptDetailAsync(paymentId, unitId);
+        return receipt is null ? NotFound(new { message = "Receipt not found." }) : Ok(receipt);
     }
 
     private bool TryGetResidentId(out int residentId)

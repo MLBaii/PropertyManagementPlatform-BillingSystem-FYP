@@ -3,16 +3,13 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
 import { BillDetail } from '@/services/bills/billsService';
+import { escapeHtml } from '@/utils/escapeHtml';
 import { formatBillingPeriod, formatShortDate } from '@/utils/formatDate';
 
 type BillPdfInput = {
   bill: BillDetail;
   residentName: string;
 };
-
-function escapeHtml(value: string): string {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
 
 // Print-appropriate styling (white background, serif/sans system fonts) rather than the
 // app's dark editorial theme — a PDF meant to be printed or saved needs to read on paper,
