@@ -26,6 +26,7 @@ import {
 
 type Step = 1 | 2 | 'success';
 type FileSource = 'camera' | 'library' | 'files';
+type PickedFileEntry = { file: PickedFile; source: FileSource };
 
 const MAX_FILES = 3;
 
@@ -33,9 +34,11 @@ export default function UploadProofScreen() {
   const { billId } = useLocalSearchParams<{ billId?: string }>();
   const [step, setStep] = useState<Step>(1);
 
-  const [files, setFiles] = useState<PickedFile[]>([]);
+  const [files, setFiles] = useState<PickedFileEntry[]>([]);
   const [fileError, setFileError] = useState<string | undefined>();
-  const [lastSource, setLastSource] = useState<FileSource | undefined>();
+  // Derived from the current file list, not "whatever was picked last" — a source's tick
+  // must disappear the moment its last file is removed, not linger until another pick.
+  const tickedSources = useMemo(() => new Set(files.map((f) => f.source)), [files]);
 
   const [bills, setBills] = useState<Bill[]>([]);
   const [isLoadingBills, setIsLoadingBills] = useState(true);
@@ -101,8 +104,7 @@ export default function UploadProofScreen() {
         setFileError(PROOF_FILE_ERROR_MESSAGE);
         return;
       }
-      setFiles((prev) => [...prev, picked]);
-      setLastSource(sourceKey);
+      setFiles((prev) => [...prev, { file: picked, source: sourceKey }]);
     } catch (err) {
       setFileError(err instanceof Error ? err.message : 'Could not select a file. Please try again.');
     }
@@ -122,7 +124,7 @@ export default function UploadProofScreen() {
     setSubmitError(undefined);
     setIsSubmitting(true);
     try {
-      const proof = await submitPaymentProof(files, selectedBillIds);
+      const proof = await submitPaymentProof(files.map((f) => f.file), selectedBillIds);
       setSubmittedProof(proof);
       setStep('success');
     } catch {
@@ -148,20 +150,20 @@ export default function UploadProofScreen() {
     );
   }
 
-  const renderFileRow = (file: PickedFile, index: number, removable: boolean) => (
-    <Card key={`${file.uri}-${index}`} style={styles.previewCard}>
+  const renderFileRow = (entry: PickedFileEntry, index: number, removable: boolean) => (
+    <Card key={`${entry.file.uri}-${index}`} style={styles.previewCard}>
       <View style={styles.previewIcon}>
         <Feather
-          name={file.mimeType === 'application/pdf' ? 'file-text' : 'image'}
+          name={entry.file.mimeType === 'application/pdf' ? 'file-text' : 'image'}
           size={18}
           color={colors.accent}
         />
       </View>
       <View style={styles.previewTextCol}>
         <Text style={styles.previewName} numberOfLines={1}>
-          {file.name}
+          {entry.file.name}
         </Text>
-        <Text style={styles.previewMeta}>{file.size !== null ? formatFileSize(file.size) : ''}</Text>
+        <Text style={styles.previewMeta}>{entry.file.size !== null ? formatFileSize(entry.file.size) : ''}</Text>
       </View>
       {removable && (
         <Pressable onPress={() => removeFile(index)} hitSlop={8} style={styles.removeButton}>
@@ -185,21 +187,21 @@ export default function UploadProofScreen() {
               <SourceButton
                 icon="camera"
                 label="Camera"
-                selected={lastSource === 'camera'}
+                selected={tickedSources.has('camera')}
                 disabled={atFileLimit}
                 onPress={() => handlePick(pickFromCamera, 'camera')}
               />
               <SourceButton
                 icon="image"
                 label="Photo Library"
-                selected={lastSource === 'library'}
+                selected={tickedSources.has('library')}
                 disabled={atFileLimit}
                 onPress={() => handlePick(pickFromLibrary, 'library')}
               />
               <SourceButton
                 icon="file"
                 label="Files"
-                selected={lastSource === 'files'}
+                selected={tickedSources.has('files')}
                 disabled={atFileLimit}
                 onPress={() => handlePick(pickFromFiles, 'files')}
               />
