@@ -1,5 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
+import { registerForPushNotificationsAsync } from '@/utils/pushNotifications';
+
 import { login as loginRequest } from './authService';
 import { clearSession, loadSession, StoredResident } from './secureStorage';
 import { setSessionExpiredHandler } from './sessionEvents';
@@ -29,6 +31,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSessionExpiredHandler(() => setResident(null));
     return () => setSessionExpiredHandler(null);
   }, []);
+
+  useEffect(() => {
+    // Covers both "on login" (login() below sets resident) and "on app start" (the
+    // loadSession effect above sets resident from a restored session) with one effect,
+    // since both paths converge on `resident` becoming non-null. Registration is entirely
+    // non-blocking (UC-101 A5) — see registerForPushNotificationsAsync's own error handling.
+    if (resident) {
+      void registerForPushNotificationsAsync();
+    }
+  }, [resident?.residentId]);
 
   const login = useCallback(async (email: string, password: string) => {
     const loggedInResident = await loginRequest(email, password);

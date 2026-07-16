@@ -42,6 +42,12 @@
           "photosPermission": "PropertyBill needs access to your photo library so you can attach a payment proof image.",
           "cameraPermission": "PropertyBill needs access to your camera so you can photograph a payment proof."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#D67D5C"
+        }
       ]
     ],
     "experiments": {

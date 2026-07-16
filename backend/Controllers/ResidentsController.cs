@@ -14,17 +14,23 @@ public class ResidentsController : ControllerBase
     private readonly IProfileService _profileService;
     private readonly IDashboardService _dashboardService;
     private readonly IPaymentProofService _paymentProofService;
+    private readonly INotificationTokenService _notificationTokenService;
+    private readonly INotificationService _notificationService;
 
     public ResidentsController(
         IBillService billService,
         IProfileService profileService,
         IDashboardService dashboardService,
-        IPaymentProofService paymentProofService)
+        IPaymentProofService paymentProofService,
+        INotificationTokenService notificationTokenService,
+        INotificationService notificationService)
     {
         _billService = billService;
         _profileService = profileService;
         _dashboardService = dashboardService;
         _paymentProofService = paymentProofService;
+        _notificationTokenService = notificationTokenService;
+        _notificationService = notificationService;
     }
 
     [HttpPost("payment-proofs")]
@@ -158,6 +164,55 @@ public class ResidentsController : ControllerBase
         return result.Status == ProfileResultStatus.Success
             ? Ok(new NotificationPreferencesResponse { NotificationPreferences = result.Profile!.NotificationPreferences })
             : NotFound(new { message = "Resident not found." });
+    }
+
+    [HttpPost("notification-tokens")]
+    public async Task<ActionResult<NotificationTokenDto>> RegisterNotificationToken(
+        [FromBody] RegisterNotificationTokenRequest request)
+    {
+        if (!TryGetResidentId(out var residentId))
+        {
+            return Unauthorized();
+        }
+
+        var token = await _notificationTokenService.RegisterAsync(residentId, request);
+        return Ok(token);
+    }
+
+    [HttpGet("notifications")]
+    public async Task<ActionResult<List<NotificationDto>>> GetNotifications()
+    {
+        if (!TryGetResidentId(out var residentId))
+        {
+            return Unauthorized();
+        }
+
+        var notifications = await _notificationService.GetHistoryAsync(residentId);
+        return Ok(notifications);
+    }
+
+    [HttpPut("notifications/{id:int}/read")]
+    public async Task<IActionResult> MarkNotificationRead(int id)
+    {
+        if (!TryGetResidentId(out var residentId))
+        {
+            return Unauthorized();
+        }
+
+        var success = await _notificationService.MarkAsReadAsync(id, residentId);
+        return success ? NoContent() : NotFound(new { message = "Notification not found." });
+    }
+
+    [HttpPut("notifications/read-all")]
+    public async Task<IActionResult> MarkAllNotificationsRead()
+    {
+        if (!TryGetResidentId(out var residentId))
+        {
+            return Unauthorized();
+        }
+
+        await _notificationService.MarkAllAsReadAsync(residentId);
+        return NoContent();
     }
 
     private bool TryGetResidentId(out int residentId)

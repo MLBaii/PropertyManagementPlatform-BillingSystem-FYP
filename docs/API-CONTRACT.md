@@ -208,18 +208,24 @@ correctly does *not* count as paid yet — an admin flipping `Payment.Status` to
 `"Paid"`) on review is admin-portal work, out of scope here.
 
 #### `POST /api/residents/payment-proofs`
-`multipart/form-data` request: a `File` part (the proof image/PDF) and one or more `BillIds` parts (repeated,
-e.g. `BillIds=6&BillIds=7`). Validated server-side (in addition to client-side validation, which is only a UX
-convenience — this can't be trusted alone): Content-Type **and** extension must both be one of
-`image/jpeg`/`.jpg`/`.jpeg`, `image/png`/`.png`, `application/pdf`/`.pdf`; size ≤ 5 MB. `BillIds` must be
-non-empty and every id must resolve to a bill owned by the caller's unit (silently excludes/rejects bills
-belonging to another resident's unit, same pattern as the Bill Detail 404). Response `201`:
+> Updated for multi-file support (up to 3 files/submission) — see `docs/PROGRESS.md`'s 2026-07-15 entry for
+> the full "why one `PaymentProof` row per file" reasoning. This section previously documented the original
+> single-file shape; corrected here to match current code.
+
+`multipart/form-data` request: one to three `Files` parts (repeated, e.g. `Files=<file1>&Files=<file2>`) and
+one or more `BillIds` parts (repeated, e.g. `BillIds=6&BillIds=7`). Each file validated server-side (in
+addition to client-side validation, which is only a UX convenience — this can't be trusted alone):
+Content-Type **and** extension must both be one of `image/jpeg`/`.jpg`/`.jpeg`, `image/png`/`.png`,
+`application/pdf`/`.pdf`; size ≤ 5 MB each. `BillIds` must be non-empty and every id must resolve to a bill
+owned by the caller's unit (silently excludes/rejects bills belonging to another resident's unit, same
+pattern as the Bill Detail 404). Response `201`:
 ```json
 {
   "proofId": 4,
-  "fileUrl": "https://<project-ref>.supabase.co/storage/v1/object/public/payment-proofs/5/3f9c2b1a....png",
-  "fileType": "image/png",
-  "fileSize": 421890,
+  "files": [
+    { "proofId": 4, "fileUrl": "https://<project-ref>.supabase.co/storage/v1/object/public/payment-proofs/5/3f9c2b1a....png", "fileType": "image/png", "fileSize": 421890 },
+    { "proofId": 5, "fileUrl": "https://<project-ref>.supabase.co/storage/v1/object/public/payment-proofs/5/8a1e77cd....png", "fileType": "image/png", "fileSize": 398120 }
+  ],
   "status": "Pending",
   "adminRemarks": null,
   "submittedAt": "2026-07-10T09:00:00Z",
@@ -229,9 +235,94 @@ belonging to another resident's unit, same pattern as the Bill Detail 404). Resp
   ]
 }
 ```
-`400` — invalid file (wrong type/size), no bills tagged, or a tagged bill doesn't belong to the resident's
-unit. `502` — the Supabase Storage upload itself failed (network issue, bad service-role key, etc).
+One `PaymentProof` row is created per file (fits the ERD's single-value `FileUrl`/`FileType`/`FileSize`
+columns with no migration); `proofId` at the top level identifies the first-uploaded ("primary") file, and
+only that file's row is linked to the tagged bills' `Payment` rows — so a 3-file submission doesn't triple
+the pending amount owed on each tagged bill. `400` — no files / more than 3 files / an invalid file
+(wrong type or size), no bills tagged, or a tagged bill doesn't belong to the resident's unit. `502` — the
+Supabase Storage upload itself failed (network issue, bad service-role key, etc) for any file in the batch;
+no partial writes (nothing is persisted until every file has uploaded successfully).
 
 #### `GET /api/residents/payment-proofs`
 Response `200` — the resident's submissions, most recent first, same shape as the array elements above (each
-with its own `taggedBills`). Used for the Pay tab's submission history.
+with its own `files` and `taggedBills`). Used for the Pay tab's submission history. Submissions are
+reconstructed by grouping `PaymentProof` rows on exact `SubmittedAt` equality — the service stamps every file
+in one submission with a single `DateTime.UtcNow` captured once per request, so same-instant rows are
+guaranteed to be "files from the same upload" without a batch/group column the ERD doesn't have.
+
+### Notifications (UC-107) — implemented
+
+`[Authorize]`, scoped to the JWT's `ResidentId` claim (token registration also needs no `UnitId`). Push
+delivery is via the [Expo Push API](https://exp.host/--/api/v2/push/send) — a public endpoint, no Expo
+account/access-token needed for basic sending. **Push notifications only actually arrive on a physical
+device running an Expo dev build (or standalone build) — not in Expo Go, since SDK 53 removed remote push
+support from Expo Go.** Token registration and in-app notification history both work identically in Expo Go;
+only the final "does a push land on the device" step needs a dev build to observe.
+
+#### `POST /api/residents/notification-tokens`
+Request:
+```json
+{ "expoPushToken": "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]", "deviceInfo": "iPhone 15, iOS 18.1" }
+```
+Upserts by the token string itself (not by resident), so re-registering the same token — e.g. on every app
+launch, which is the intended usage — just refreshes `RegisteredAt`/`DeviceInfo` rather than creating
+duplicates. If the same token was previously registered under a *different* resident (a shared device, prior
+resident logged out), it's reassigned to whoever registers it now, since only the current session on that
+device should receive its pushes. Response `200`:
+```json
+{ "tokenId": 1, "expoPushToken": "ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]", "isActive": true, "registeredAt": "2026-07-16T09:00:52Z" }
+```
+
+#### `GET /api/residents/notifications`
+Response `200` — newest first:
+```json
+[
+  { "notificationId": 3, "type": "BillIssued", "title": "New bill issued", "body": "A new bill has been issued for your unit. Tap to view details.", "deepLink": null, "isRead": false, "sentAt": "2026-07-16T09:27:46Z" }
+]
+```
+`type` is one of `BillIssued` | `BillOverdue` | `PaymentConfirmed` | `DueReminder` (the four categories this
+task's sending service and dev-test endpoint know about — an admin-triggered sender, when built, can send
+any string here since `Type` is unconstrained free text in the schema). `deepLink`, when present, is a path
+into the resident app's own router (e.g. `/(tabs)/bills/12`) for the app to navigate to on tap.
+
+#### `PUT /api/residents/notifications/{id}/read`
+Marks one notification read. `204` on success. `404` if it doesn't exist **or** belongs to a different
+resident — deliberately not distinguished, same uniform-404 pattern as Bill Detail.
+
+#### `PUT /api/residents/notifications/read-all`
+Marks every unread notification for the resident as read (a set-based `ExecuteUpdateAsync`, not a fetch-then-
+loop). `204` on success, always — a no-op if there was nothing unread.
+
+#### Sending (internal — no dedicated endpoint)
+`INotificationSendingService.SendAsync(residentId, type, title, body, deepLink)` is what actually creates a
+`Notification` row and pushes to the resident's active tokens; nothing outside this task calls it yet (the
+admin module that would call it on bill-issue/overdue/payment-confirm events doesn't exist), so
+`POST /api/dev/notifications/test` (below) is currently its only caller. Preference handling:
+- `NotificationPreferences.BillDueReminders == false` and `type == "DueReminder"` → **nothing is sent at
+  all** — no `Notification` row, no push. This is the one category with its own dedicated toggle, so
+  "respecting the preference" means suppressing it outright.
+- `NotificationPreferences.PushEnabled == false` → the `Notification` row is still created (the resident can
+  still see it in their in-app Alerts history) but no Expo push is attempted — `PushEnabled` gates the device
+  push channel specifically, not whether the event gets recorded.
+- `EmailEnabled` is parsed but unused — no email-sending infrastructure exists in this project; out of scope
+  for this task.
+
+Delivery failures are logged (`ILogger<ExpoPushService>`/`ILogger<NotificationSendingService>`) with the
+Expo ticket's error code. A ticket whose `details.error` is `"DeviceNotRegistered"` deactivates that token
+(`NotificationToken.IsActive = false`) so it's excluded from future sends — verified live: a fake token
+correctly comes back `DeviceNotRegistered` and gets deactivated in the same request.
+
+#### `POST /api/dev/notifications/test` — Development environment only
+**Not part of the Module A/B contract** — a standalone dev tool for demoing/testing notifications without
+the (not yet built) admin module. `DevController` is mapped the same as every other controller (nothing
+excludes it from routing based on environment), so the actual safeguard is inside the action itself: it
+checks `IWebHostEnvironment.IsDevelopment()` first and returns `404` immediately if the app isn't running in
+Development — this is the only thing preventing it from working in Production, so it must not be removed.
+Not `[Authorize]` — takes a raw `residentId` in the body since it's meant to be curled directly during
+development, not driven from a logged-in session. Request:
+```json
+{ "residentId": 9, "type": "BillIssued", "title": null, "body": null, "deepLink": null }
+```
+`type` defaults to `"BillIssued"`; `title`/`body` default to a canned sample per `type` (matching Figure
+4.14's four example notifications) when omitted; `deepLink` is optional. Response `200`
+`{ "message": "Notification sent." }`, or `404` if `residentId` doesn't exist.

@@ -46,6 +46,11 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IPaymentProofRepository, PaymentProofRepository>();
 builder.Services.AddScoped<IPaymentProofService, PaymentProofService>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<INotificationTokenRepository, NotificationTokenRepository>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<INotificationTokenService, NotificationTokenService>();
+builder.Services.AddScoped<INotificationSendingService, NotificationSendingService>();
 
 builder.Services.AddHttpClient<ISupabaseStorageService, SupabaseStorageService>((sp, client) =>
 {
@@ -53,6 +58,11 @@ builder.Services.AddHttpClient<ISupabaseStorageService, SupabaseStorageService>(
     var serviceRoleKey = config["Supabase:ServiceRoleKey"];
     client.DefaultRequestHeaders.Add("apikey", serviceRoleKey);
     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", serviceRoleKey);
+});
+
+builder.Services.AddHttpClient<IExpoPushService, ExpoPushService>(client =>
+{
+    client.BaseAddress = new Uri("https://exp.host/");
 });
 
 var app = builder.Build();

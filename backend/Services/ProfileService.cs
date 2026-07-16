@@ -83,27 +83,10 @@ public class ProfileService : IProfileService
             Name = resident.Name,
             Email = resident.Email,
             PhoneNumber = resident.PhoneNumber,
-            NotificationPreferences = ParsePreferences(resident.NotificationPreferences),
+            NotificationPreferences = NotificationPreferencesDto.Parse(resident.NotificationPreferences),
             UnitNumber = resident.Unit.UnitNumber,
             Floor = resident.Unit.Floor,
             PropertyName = resident.Unit.Property.Name,
         };
-    }
-
-    private static NotificationPreferencesDto ParsePreferences(string json)
-    {
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            return new NotificationPreferencesDto();
-        }
-
-        try
-        {
-            return JsonSerializer.Deserialize<NotificationPreferencesDto>(json) ?? new NotificationPreferencesDto();
-        }
-        catch (JsonException)
-        {
-            return new NotificationPreferencesDto();
-        }
     }
 }
