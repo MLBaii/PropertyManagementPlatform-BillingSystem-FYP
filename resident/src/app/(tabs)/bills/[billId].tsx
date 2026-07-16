@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { StatusBadge } from '@/components/bills/StatusBadge';
@@ -24,20 +24,38 @@ export default function BillDetailScreen() {
   const [loadError, setLoadError] = useState<string | undefined>();
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [pdfError, setPdfError] = useState<string | undefined>();
+  const lastLoadedBillId = useRef<string | undefined>(undefined);
 
-  useEffect(() => {
-    const id = Number(billId);
-    if (!Number.isFinite(id)) {
-      setLoadError('Invalid bill.');
-      setIsLoading(false);
-      return;
-    }
+  // Refetches on every focus, not just first mount — the status shown here (e.g. after
+  // tagging this bill to a payment proof on the Pay tab) would otherwise stay stale until
+  // the app reloads, since Expo Router keeps this screen mounted in the background stack.
+  useFocusEffect(
+    useCallback(() => {
+      const id = Number(billId);
+      if (!Number.isFinite(id)) {
+        setLoadError('Invalid bill.');
+        setIsLoading(false);
+        return;
+      }
 
-    getBillById(id)
-      .then(setBill)
-      .catch(() => setLoadError('Could not load this bill.'))
-      .finally(() => setIsLoading(false));
-  }, [billId]);
+      if (lastLoadedBillId.current !== billId) {
+        lastLoadedBillId.current = billId;
+        setIsLoading(true);
+        getBillById(id)
+          .then(setBill)
+          .catch(() => setLoadError('Could not load this bill.'))
+          .finally(() => setIsLoading(false));
+        return;
+      }
+
+      getBillById(id)
+        .then((fresh) => {
+          setBill(fresh);
+          setLoadError(undefined);
+        })
+        .catch(() => setLoadError('Could not load this bill.'));
+    }, [billId])
+  );
 
   if (isLoading) {
     return (

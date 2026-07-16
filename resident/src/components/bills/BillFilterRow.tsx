@@ -4,9 +4,17 @@ import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { colors } from '@/theme/colors';
 import { fonts } from '@/theme/typography';
 
-export type BillFilter = 'All' | 'Unpaid' | 'Overdue' | 'Paid';
+export type BillFilter = 'All' | 'Unpaid' | 'Overdue' | 'ProofSubmitted' | 'Paid';
 
-const FILTERS: BillFilter[] = ['All', 'Unpaid', 'Overdue', 'Paid'];
+const FILTERS: BillFilter[] = ['All', 'Unpaid', 'Overdue', 'ProofSubmitted', 'Paid'];
+
+export const FILTER_LABELS: Record<BillFilter, string> = {
+  All: 'All',
+  Unpaid: 'Unpaid',
+  Overdue: 'Overdue',
+  ProofSubmitted: 'Proof Submitted',
+  Paid: 'Paid',
+};
 
 type Props = {
   value: BillFilter;
@@ -28,7 +36,7 @@ export function BillFilterRow({ value, onChange }: Props) {
             onPress={() => onChange(filter)}
             style={[styles.pill, isActive && styles.pillActive]}
           >
-            <Text style={[styles.label, isActive && styles.labelActive]}>{filter}</Text>
+            <Text style={[styles.label, isActive && styles.labelActive]}>{FILTER_LABELS[filter]}</Text>
           </Pressable>
         );
       })}

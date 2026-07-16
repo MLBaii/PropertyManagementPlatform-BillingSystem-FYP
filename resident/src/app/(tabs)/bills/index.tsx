@@ -1,9 +1,9 @@
-import { router } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 
 import { BillCard } from '@/components/bills/BillCard';
-import { BillFilter, BillFilterRow } from '@/components/bills/BillFilterRow';
+import { BillFilter, BillFilterRow, FILTER_LABELS } from '@/components/bills/BillFilterRow';
 import { Screen } from '@/components/ui/Screen';
 import { Bill, getBills } from '@/services/bills/billsService';
 import { colors } from '@/theme/colors';
@@ -14,13 +14,31 @@ export default function BillsListScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | undefined>();
   const [filter, setFilter] = useState<BillFilter>('All');
+  const hasLoadedOnce = useRef(false);
 
-  useEffect(() => {
-    getBills()
-      .then(setBills)
-      .catch(() => setLoadError('Could not load your bills. Pull down to try again.'))
-      .finally(() => setIsLoading(false));
-  }, []);
+  // Tab screens stay mounted when you switch away (e.g. to Pay to submit a proof), so a
+  // plain mount-only fetch would keep showing this list's pre-submission snapshot forever —
+  // refetch every time the tab regains focus, not just once. Silent after the first load
+  // (no full-screen spinner) so switching back to an already-loaded list doesn't flash empty.
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasLoadedOnce.current) {
+        hasLoadedOnce.current = true;
+        getBills()
+          .then(setBills)
+          .catch(() => setLoadError('Could not load your bills. Pull down to try again.'))
+          .finally(() => setIsLoading(false));
+        return;
+      }
+
+      getBills()
+        .then((fresh) => {
+          setBills(fresh);
+          setLoadError(undefined);
+        })
+        .catch(() => setLoadError('Could not load your bills. Pull down to try again.'));
+    }, [])
+  );
 
   const filteredBills = useMemo(() => {
     if (filter === 'All') {
@@ -76,7 +94,7 @@ export default function BillsListScreen() {
             <Text style={styles.emptyText}>
               {bills.length === 0
                 ? 'You have no bills yet — check back after your first billing cycle.'
-                : `No ${filter.toLowerCase()} bills.`}
+                : `No ${FILTER_LABELS[filter].toLowerCase()} bills.`}
             </Text>
           </View>
         }
