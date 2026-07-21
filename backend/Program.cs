@@ -82,6 +82,14 @@ if (args.Contains("--seed") || args.Contains("--reseed"))
     return;
 }
 
+if (args.Contains("--seed-extra"))
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DbSeeder.SeedExtraAsync(context);
+    return;
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
