@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BillTagRow } from '@/components/pay/BillTagRow';
@@ -51,15 +51,21 @@ export default function UploadProofScreen() {
   const [submittedProof, setSubmittedProof] = useState<PaymentProof | null>(null);
 
   // Taggable = the bills that could plausibly still need a payment: not already Paid, and
-  // not already sitting on another Pending proof (ProofSubmitted).
-  useEffect(() => {
-    getBills()
-      .then((allBills) => {
-        setBills(allBills.filter((b) => b.status === 'Unpaid' || b.status === 'Overdue'));
-      })
-      .catch(() => setBillsError('Could not load your bills. Please try again.'))
-      .finally(() => setIsLoadingBills(false));
-  }, []);
+  // not already sitting on another Pending proof (ProofSubmitted). useFocusEffect (not
+  // plain useEffect) so a bill that became ProofSubmitted from an earlier tagging in this
+  // same session — e.g. the resident backs out and reopens this screen — is re-excluded on
+  // return rather than shown stale from a mount that predates that submission.
+  useFocusEffect(
+    useCallback(() => {
+      setIsLoadingBills(true);
+      getBills()
+        .then((allBills) => {
+          setBills(allBills.filter((b) => b.status === 'Unpaid' || b.status === 'Overdue'));
+        })
+        .catch(() => setBillsError('Could not load your bills. Please try again.'))
+        .finally(() => setIsLoadingBills(false));
+    }, [])
+  );
 
   // Pre-tags the bill the resident arrived from (Bill Detail's "Upload Payment Proof" button),
   // once, the first time the taggable list includes it — a no-op if it's already settled/tagged.

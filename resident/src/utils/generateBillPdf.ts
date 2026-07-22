@@ -1,4 +1,4 @@
-import { File, Paths } from 'expo-file-system';
+import { File } from 'expo-file-system';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
@@ -161,23 +161,35 @@ function buildBillHtml({ bill, residentName }: BillPdfInput): string {
 }
 
 // Renders the bill to a PDF on-device (no server round trip — see §2.4.6) and opens the
-// native share sheet. printToFileAsync writes to a randomly-named cache file; expo-file-system
-// then copies it to a human-readable Bill_[ReferenceNumber].pdf name before sharing, since the
-// filename offered in the share sheet / Files app comes from the file's actual path.
+// native share sheet. printToFileAsync writes to a randomly-named cache file; it's renamed
+// in place to a human-readable Bill_[ReferenceNumber].pdf (rather than copied into
+// expo-file-system's Paths.cache) because on Android, Expo Go's Paths.cache resolves to a
+// sandboxed "experience-isolated" directory that does NOT match where expo-print's native
+// code actually wrote the file (it uses the OS cache dir directly) — copying across that
+// mismatch silently fails there. Renaming in place never has to resolve Paths.cache at all.
 export async function generateAndShareBillPdf(input: BillPdfInput): Promise<void> {
-  const html = buildBillHtml(input);
-  const { uri } = await Print.printToFileAsync({ html, base64: false });
+  try {
+    const html = buildBillHtml(input);
+    const { uri } = await Print.printToFileAsync({ html, base64: false });
 
-  const filename = `Bill_${input.bill.referenceNumber}.pdf`;
-  const destination = new File(Paths.cache, filename);
-  await new File(uri).copy(destination, { overwrite: true });
+    const filename = `Bill_${input.bill.referenceNumber}.pdf`;
+    const file = new File(uri);
+    file.rename(filename);
 
-  const canShare = await Sharing.isAvailableAsync();
-  if (canShare) {
-    await Sharing.shareAsync(destination.uri, {
-      mimeType: 'application/pdf',
-      dialogTitle: filename,
-      UTI: 'com.adobe.pdf',
-    });
+    const canShare = await Sharing.isAvailableAsync();
+    if (canShare) {
+      await Sharing.shareAsync(file.uri, {
+        mimeType: 'application/pdf',
+        dialogTitle: filename,
+        UTI: 'com.adobe.pdf',
+      });
+    }
+  } catch (err) {
+    console.error(
+      '[generateAndShareBillPdf] failed:',
+      err instanceof Error ? err.message : err,
+      err instanceof Error ? err.stack : undefined
+    );
+    throw err;
   }
 }

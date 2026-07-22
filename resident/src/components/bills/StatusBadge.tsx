@@ -14,6 +14,7 @@ const STATUS_CONFIG: Record<BillStatus, { label: string; color: string; bg: stri
   Unpaid: { label: 'Unpaid', color: colors.unpaid, bg: colors.unpaidBg },
   Overdue: { label: 'Overdue', color: colors.danger, bg: colors.dangerBg },
   ProofSubmitted: { label: 'Proof Submitted', color: colors.pending, bg: colors.pendingBg },
+  Disputed: { label: 'Disputed', color: colors.disputed, bg: colors.disputedBg },
 };
 
 export function StatusBadge({ status }: Props) {

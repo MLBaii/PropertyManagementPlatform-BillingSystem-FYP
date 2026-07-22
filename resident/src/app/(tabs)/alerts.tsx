@@ -1,7 +1,8 @@
-import { router, useFocusEffect } from 'expo-router';
-import React, { useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { NotificationDetailModal } from '@/components/alerts/NotificationDetailModal';
 import { NotificationRow } from '@/components/alerts/NotificationRow';
 import { Card } from '@/components/ui/Card';
 import { Screen } from '@/components/ui/Screen';
@@ -13,6 +14,7 @@ import { fonts } from '@/theme/typography';
 export default function AlertsScreen() {
   const { notifications, unreadCount, isLoading, loadError, refresh, markAsRead, markAllAsRead } =
     useNotifications();
+  const [openNotification, setOpenNotification] = useState<AppNotification | null>(null);
 
   // Tab screens stay mounted when you switch away — refetch on every focus so a
   // notification triggered while this tab wasn't active (or a read made elsewhere) shows up
@@ -23,15 +25,11 @@ export default function AlertsScreen() {
     }, [refresh])
   );
 
-  const handlePress = (notification: AppNotification) => {
-    if (!notification.isRead) {
-      void markAsRead(notification.notificationId);
-    }
-    if (notification.deepLink) {
-      // deepLink is an arbitrary string from the backend, not a route Expo Router's typed
-      // routes can verify statically — the cast is inherent to that, not a workaround for a bug.
-      router.push(notification.deepLink as Parameters<typeof router.push>[0]);
-    }
+  const handleMarkAsRead = (notificationId: number) => {
+    void markAsRead(notificationId);
+    setOpenNotification((prev) =>
+      prev && prev.notificationId === notificationId ? { ...prev, isRead: true } : prev
+    );
   };
 
   return (
@@ -71,13 +69,19 @@ export default function AlertsScreen() {
               <NotificationRow
                 key={notification.notificationId}
                 notification={notification}
-                onPress={() => handlePress(notification)}
+                onPress={() => setOpenNotification(notification)}
                 isLast={index === notifications.length - 1}
               />
             ))}
           </Card>
         )}
       </ScrollView>
+
+      <NotificationDetailModal
+        notification={openNotification}
+        onMarkAsRead={handleMarkAsRead}
+        onClose={() => setOpenNotification(null)}
+      />
     </Screen>
   );
 }

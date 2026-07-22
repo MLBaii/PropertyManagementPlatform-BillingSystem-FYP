@@ -3,6 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { ForgotPasswordModal } from '@/components/auth/ForgotPasswordModal';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { Screen } from '@/components/ui/Screen';
 import { TextField } from '@/components/ui/TextField';
@@ -26,6 +27,7 @@ export default function LoginScreen() {
     sessionExpired === '1' ? 'Your session has expired. Please log in again.' : undefined
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isForgotPasswordVisible, setIsForgotPasswordVisible] = useState(false);
 
   const handleLogin = async () => {
     setFormError(undefined);
@@ -97,14 +99,14 @@ export default function LoginScreen() {
           <TextField
             label="Password"
             placeholder="••••••••"
-            secureTextEntry
+            isPassword
             autoCapitalize="none"
             value={password}
             onChangeText={setPassword}
             error={passwordError ?? formError}
           />
 
-          <Pressable style={styles.forgotWrap} onPress={() => {}}>
+          <Pressable style={styles.forgotWrap} onPress={() => setIsForgotPasswordVisible(true)}>
             <Text style={styles.forgotText}>Forgot Password?</Text>
           </Pressable>
 
@@ -113,6 +115,11 @@ export default function LoginScreen() {
           <Text style={styles.footnote}>Accounts are issued by your property manager</Text>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <ForgotPasswordModal
+        visible={isForgotPasswordVisible}
+        onClose={() => setIsForgotPasswordVisible(false)}
+      />
     </Screen>
   );
 }

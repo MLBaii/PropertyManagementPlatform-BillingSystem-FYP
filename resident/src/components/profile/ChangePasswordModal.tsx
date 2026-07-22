@@ -85,7 +85,7 @@ export function ChangePasswordModal({ visible, onClose }: Props) {
       {successMessage ? <Text style={styles.success}>{successMessage}</Text> : null}
       <TextField
         label="Current password"
-        secureTextEntry
+        isPassword
         autoCapitalize="none"
         value={currentPassword}
         onChangeText={setCurrentPassword}
@@ -93,7 +93,7 @@ export function ChangePasswordModal({ visible, onClose }: Props) {
       />
       <TextField
         label="New password"
-        secureTextEntry
+        isPassword
         autoCapitalize="none"
         value={newPassword}
         onChangeText={setNewPassword}
@@ -101,7 +101,7 @@ export function ChangePasswordModal({ visible, onClose }: Props) {
       />
       <TextField
         label="Confirm new password"
-        secureTextEntry
+        isPassword
         autoCapitalize="none"
         value={confirmPassword}
         onChangeText={setConfirmPassword}

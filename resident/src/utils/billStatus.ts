@@ -9,18 +9,23 @@ export function getCountdownColor(status: Bill['status']): string {
       return colors.danger;
     case 'ProofSubmitted':
       return colors.pending;
+    case 'Disputed':
+      return colors.disputed;
     default:
       return colors.unpaid;
   }
 }
 
-// Primary countdown line: "Settled" / "Pending review" / "N days overdue" / "N days left" / "Due today".
+// Primary countdown line: "Settled" / "Pending review" / "Disputed" / "N days overdue" / "N days left" / "Due today".
 export function getCountdownLabel(bill: Pick<Bill, 'status' | 'daysUntilDue'>): string {
   if (bill.status === 'Paid') {
     return 'Settled';
   }
   if (bill.status === 'ProofSubmitted') {
     return 'Pending review';
+  }
+  if (bill.status === 'Disputed') {
+    return 'Disputed';
   }
   if (bill.status === 'Overdue') {
     return `${Math.abs(bill.daysUntilDue)} days overdue`;

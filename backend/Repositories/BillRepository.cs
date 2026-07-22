@@ -15,7 +15,10 @@ public class BillRepository : IBillRepository
 
     public Task<List<Bill>> GetByUnitIdAsync(int unitId)
     {
+        // Disputes included so BillService.ComputeEffectiveStatus can derive "Disputed"
+        // without a separate query per bill.
         return _context.Bills
+            .Include(b => b.Disputes)
             .Where(b => b.UnitId == unitId)
             .OrderByDescending(b => b.IssueDate)
             .ToListAsync();
@@ -29,6 +32,7 @@ public class BillRepository : IBillRepository
         // "isn't yours" by response shape.
         return _context.Bills
             .Include(b => b.BillLineItems)
+            .Include(b => b.Disputes)
             .Include(b => b.Unit)
             .ThenInclude(u => u.Property)
             .FirstOrDefaultAsync(b => b.BillId == billId && b.UnitId == unitId);
