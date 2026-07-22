@@ -1,20 +1,14 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { registerNotificationToken } from '@/services/notifications/notificationsService';
 
-// Foreground behavior: show the banner + play the sound even while the app is open, rather
-// than silently updating the badge only (the OS default when no handler is set).
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
+// Expo Go on SDK 53+ dropped remote push support entirely, and merely importing
+// expo-notifications there throws synchronously (before any try/catch can run) — so this
+// module must never `import * as Notifications` at the top level. Everything below loads it
+// dynamically, and only when we're not in Expo Go.
+const isExpoGo = Constants.appOwnership === 'expo';
 
 // Called on login and on app-start session restore (see AuthContext) — registers this
 // device's Expo push token with the backend so it can receive pushes. Every failure path
@@ -22,7 +16,24 @@ Notifications.setNotificationHandler({
 // resident from using the app"): a caught error just means no push for this device/session,
 // never a thrown error the caller has to handle.
 export async function registerForPushNotificationsAsync(): Promise<void> {
+  if (isExpoGo) {
+    return;
+  }
+
   try {
+    const Notifications = await import('expo-notifications');
+
+    // Foreground behavior: show the banner + play the sound even while the app is open,
+    // rather than silently updating the badge only (the OS default when no handler is set).
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+      }),
+    });
+
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('default', {
         name: 'default',
