@@ -126,6 +126,18 @@ if (args.Contains("--seed-extra"))
     return;
 }
 
+// Wipes and recreates only the 5 demo accounts (PBtest1-5@propertybill.test) — safe to
+// re-run between presentation/recording practice runs to reset them to a pristine state.
+// Never touches Alice/Benjamin or any other seeded data.
+if (args.Contains("--seed-demo"))
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DbSeeder.ClearDemoAsync(context);
+    await DbSeeder.SeedDemoAsync(context);
+    return;
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
