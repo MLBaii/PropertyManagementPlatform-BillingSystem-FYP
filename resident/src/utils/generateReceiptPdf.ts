@@ -1,4 +1,3 @@
-import { File } from 'expo-file-system';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
@@ -162,22 +161,19 @@ function buildReceiptHtml({ receipt, residentName }: ReceiptPdfInput): string {
 </html>`;
 }
 
-// Same on-device flow as generateAndShareBillPdf, including the same fix: rename the
-// printToFileAsync output in place rather than copying it into expo-file-system's
-// Paths.cache, since that resolves to a different (sandboxed) directory than where
-// expo-print actually wrote the file under Expo Go on Android — see generateBillPdf.ts.
+// Same on-device flow and fix as generateAndShareBillPdf: share directly from the
+// printToFileAsync cache URI rather than touching expo-file-system at all — see that file's
+// comment for why (renaming/copying via expo-file-system throws a READ-permission error on
+// a physical Android device in Expo Go).
 export async function generateAndShareReceiptPdf(input: ReceiptPdfInput): Promise<void> {
   try {
     const html = buildReceiptHtml(input);
     const { uri } = await Print.printToFileAsync({ html, base64: false });
 
     const filename = `Receipt_${input.receipt.receiptNumber}.pdf`;
-    const file = new File(uri);
-    file.rename(filename);
-
     const canShare = await Sharing.isAvailableAsync();
     if (canShare) {
-      await Sharing.shareAsync(file.uri, {
+      await Sharing.shareAsync(uri, {
         mimeType: 'application/pdf',
         dialogTitle: filename,
         UTI: 'com.adobe.pdf',

@@ -1,4 +1,3 @@
-import { File } from 'expo-file-system';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
@@ -161,24 +160,22 @@ function buildBillHtml({ bill, residentName }: BillPdfInput): string {
 }
 
 // Renders the bill to a PDF on-device (no server round trip — see §2.4.6) and opens the
-// native share sheet. printToFileAsync writes to a randomly-named cache file; it's renamed
-// in place to a human-readable Bill_[ReferenceNumber].pdf (rather than copied into
-// expo-file-system's Paths.cache) because on Android, Expo Go's Paths.cache resolves to a
-// sandboxed "experience-isolated" directory that does NOT match where expo-print's native
-// code actually wrote the file (it uses the OS cache dir directly) — copying across that
-// mismatch silently fails there. Renaming in place never has to resolve Paths.cache at all.
+// native share sheet, sharing directly from the cache URI printToFileAsync returns.
+// Deliberately does NOT touch expo-file-system at all: an earlier version renamed/copied the
+// file via expo-file-system's `File` API for a nicer filename, but on a physical Android
+// device in Expo Go that throws "Missing 'READ' permission for accessing the file" —
+// expo-file-system's own permission layer doesn't recognize a path expo-print wrote via its
+// native code outside of it. Sharing.shareAsync's `dialogTitle` gives the share sheet a
+// readable name instead, without needing filesystem access to rename anything.
 export async function generateAndShareBillPdf(input: BillPdfInput): Promise<void> {
   try {
     const html = buildBillHtml(input);
     const { uri } = await Print.printToFileAsync({ html, base64: false });
 
     const filename = `Bill_${input.bill.referenceNumber}.pdf`;
-    const file = new File(uri);
-    file.rename(filename);
-
     const canShare = await Sharing.isAvailableAsync();
     if (canShare) {
-      await Sharing.shareAsync(file.uri, {
+      await Sharing.shareAsync(uri, {
         mimeType: 'application/pdf',
         dialogTitle: filename,
         UTI: 'com.adobe.pdf',

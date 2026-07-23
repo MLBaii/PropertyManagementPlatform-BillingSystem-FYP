@@ -1,6 +1,6 @@
 import { apiClient } from '@/services/api/client';
 
-export type BillStatus = 'Unpaid' | 'Overdue' | 'Paid' | 'ProofSubmitted' | 'Disputed';
+export type BillStatus = 'Unpaid' | 'Overdue' | 'Paid' | 'ProofSubmitted' | 'Disputed' | 'PendingDispute';
 
 export type Bill = {
   billId: number;

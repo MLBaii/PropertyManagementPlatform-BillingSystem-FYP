@@ -19,6 +19,8 @@ export const colors = {
   pendingBg: 'rgba(217, 178, 96, 0.12)',
   disputed: '#B08FD9',
   disputedBg: 'rgba(176, 143, 217, 0.12)',
+  pendingDispute: '#9C8FB0',
+  pendingDisputeBg: 'rgba(156, 143, 176, 0.12)',
   surface2: '#2B2520',
 } as const;
 

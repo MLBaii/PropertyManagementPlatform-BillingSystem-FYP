@@ -4,9 +4,24 @@ import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { colors } from '@/theme/colors';
 import { fonts } from '@/theme/typography';
 
-export type BillFilter = 'All' | 'Unpaid' | 'Overdue' | 'ProofSubmitted' | 'Disputed' | 'Paid';
+export type BillFilter =
+  | 'All'
+  | 'Unpaid'
+  | 'Overdue'
+  | 'ProofSubmitted'
+  | 'Disputed'
+  | 'PendingDispute'
+  | 'Paid';
 
-const FILTERS: BillFilter[] = ['All', 'Unpaid', 'Overdue', 'ProofSubmitted', 'Disputed', 'Paid'];
+const FILTERS: BillFilter[] = [
+  'All',
+  'Unpaid',
+  'Overdue',
+  'ProofSubmitted',
+  'Disputed',
+  'PendingDispute',
+  'Paid',
+];
 
 export const FILTER_LABELS: Record<BillFilter, string> = {
   All: 'All',
@@ -14,6 +29,7 @@ export const FILTER_LABELS: Record<BillFilter, string> = {
   Overdue: 'Overdue',
   ProofSubmitted: 'Proof Submitted',
   Disputed: 'Disputed',
+  PendingDispute: 'Pending Dispute',
   Paid: 'Paid',
 };
 

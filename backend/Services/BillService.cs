@@ -79,15 +79,22 @@ public class BillService : IBillService
 
     // "Overdue" isn't a value anyone writes to Bill.Status — it's derived from the due date,
     // since nothing in this project runs a scheduled job to flip a stored status over.
-    // "Disputed" takes priority over every other computed status (including Paid — a resident
-    // can dispute a bill they've already paid) for as long as the dispute is Open/UnderReview;
-    // once it's Resolved (or Rejected), the bill reverts to its normal computed status here
-    // with no extra bookkeeping, since this just re-checks the dispute's current status.
+    // A dispute's own status drives a two-stage override that takes priority over every
+    // other computed status (including Paid — a resident can dispute a bill they've already
+    // paid): "Open" (not yet looked at) shows "Disputed", "UnderReview" (admin has seen it)
+    // shows "PendingDispute". Once it's "Resolved" (or "Rejected"), neither check matches and
+    // the bill falls through to its normal computed status below — re-evaluated fresh on
+    // every call, so no separate bookkeeping is needed to "revert" it.
     private static string ComputeEffectiveStatus(Bill bill)
     {
-        if (bill.Disputes.Any(d => d.Status is "Open" or "UnderReview"))
+        if (bill.Disputes.Any(d => d.Status == "Open"))
         {
             return "Disputed";
+        }
+
+        if (bill.Disputes.Any(d => d.Status == "UnderReview"))
+        {
+            return "PendingDispute";
         }
 
         if (string.Equals(bill.Status, "Paid", StringComparison.OrdinalIgnoreCase))
