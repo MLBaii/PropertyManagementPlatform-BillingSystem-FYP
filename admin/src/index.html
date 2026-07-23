@@ -8,5 +8,27 @@
   </head>
   <body>
     <app-root></app-root>
+    <script>
+      // The billing form is rendered by Angular after login. Group each control with its
+      // own visible label once it appears, and repeat safely after Angular re-renders it.
+      const billingLabels = ['Charge type', 'Default rate (RM)', 'Frequency', 'Billing day (1-31)', 'Due day (1-31)', 'Late penalty (%)', 'Grace period (days)'];
+      const labelBillingForm = () => {
+        const form = document.querySelector('form.item-form');
+        if (!form || form.dataset.labelled) return;
+        const controls = [...form.querySelectorAll('input, select')];
+        if (controls.length !== billingLabels.length) return;
+        controls.forEach((control, index) => {
+          const field = document.createElement('label');
+          field.className = 'field';
+          const title = document.createElement('span');
+          title.textContent = billingLabels[index];
+          control.parentNode.insertBefore(field, control);
+          field.append(title, control);
+        });
+        form.dataset.labelled = 'true';
+      };
+      new MutationObserver(labelBillingForm).observe(document.body, { childList: true, subtree: true });
+      labelBillingForm();
+    </script>
   </body>
 </html>

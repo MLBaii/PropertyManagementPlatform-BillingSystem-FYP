@@ -1,1 +1,11 @@
 body{margin:0;color:#241f1b}
+
+/* Billing-item form guide: the current component uses a compact grid, so make the
+   meaning and unit of every numeric field visible before the inputs. */
+form.item-form .field {
+  display: grid;
+  gap: 5px;
+  color: #674b3d;
+  font-size: 0.78rem;
+  font-weight: 700;
+}

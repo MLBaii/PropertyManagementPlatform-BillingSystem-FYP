@@ -1,0 +1,2 @@
+namespace PropertyBill.Api.Dtos;
+public class AdminBillingItemDto { public int BillingItemId { get; set; } public string ChargeType { get; set; } = string.Empty; public decimal DefaultRate { get; set; } public string Frequency { get; set; } = string.Empty; public int BillingDay { get; set; } public int DueDay { get; set; } public decimal PenaltyRate { get; set; } public int GracePeriodDays { get; set; } public bool IsActive { get; set; } }
