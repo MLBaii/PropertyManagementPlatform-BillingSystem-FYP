@@ -17,7 +17,8 @@ public class AdminBillsController(AppDbContext context) : ControllerBase
     {
         if (await context.Bills.AnyAsync(bill => bill.BillingPeriod == request.BillingPeriod)) return Conflict(new { message = "Bills have already been generated for this period." });
         var units = await context.Units.Where(unit => unit.IsActive).ToListAsync(); var items = await context.BillingItems.Where(item => item.IsActive).ToListAsync();
-        foreach (var unit in units) { var bill = new PropertyBill.Api.Models.Bill { UnitId=unit.UnitId,BillingPeriod=request.BillingPeriod,ReferenceNumber=$"BILL-{request.BillingPeriod}-{unit.UnitNumber.Replace("-","")}",IssueDate=DateTime.UtcNow,DueDate=request.DueDate,Status="Unpaid",TotalAmount=items.Sum(item=>item.DefaultRate),OutstandingBalance=items.Sum(item=>item.DefaultRate) }; foreach(var item in items) bill.BillLineItems.Add(new PropertyBill.Api.Models.BillLineItem { Description=item.ChargeType,Amount=item.DefaultRate,LineItemType="Charge",BillingItemId=item.BillingItemId }); context.Bills.Add(bill); }
+        var dueDateUtc = DateTime.SpecifyKind(request.DueDate.Date, DateTimeKind.Utc);
+        foreach (var unit in units) { var bill = new PropertyBill.Api.Models.Bill { UnitId=unit.UnitId,BillingPeriod=request.BillingPeriod,ReferenceNumber=$"BILL-{request.BillingPeriod}-{unit.UnitNumber.Replace("-","")}",IssueDate=DateTime.UtcNow,DueDate=dueDateUtc,Status="Unpaid",TotalAmount=items.Sum(item=>item.DefaultRate),OutstandingBalance=items.Sum(item=>item.DefaultRate) }; foreach(var item in items) bill.BillLineItems.Add(new PropertyBill.Api.Models.BillLineItem { Description=item.ChargeType,Amount=item.DefaultRate,LineItemType="Charge",BillingItemId=item.BillingItemId }); context.Bills.Add(bill); }
         await context.SaveChangesAsync(); return Ok(new GenerateBillsResponse { BillsGenerated = units.Count });
     }
 }
