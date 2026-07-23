@@ -1,10 +1,11 @@
-import { colors } from '@/theme/colors';
 import { Bill } from '@/services/bills/billsService';
+import { ThemeColors } from '@/theme/colors';
 
 // Purely payment-side, like Bill['status'] itself — dispute state is a separate badge
 // (see BillCard/[billId].tsx rendering ActiveDisputeStatus alongside this), never folded
-// into the countdown row.
-export function getCountdownColor(status: Bill['status']): string {
+// into the countdown row. Takes colors as a parameter (not a hook) since this is a plain
+// function, not a component — callers get colors from useTheme() themselves.
+export function getCountdownColor(status: Bill['status'], colors: ThemeColors): string {
   switch (status) {
     case 'Paid':
       return colors.success;

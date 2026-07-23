@@ -4,7 +4,8 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 
 import { Card } from '@/components/ui/Card';
 import { Receipt } from '@/services/receipts/receiptsService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 import { formatBillingPeriod, formatShortDate } from '@/utils/formatDate';
 
@@ -16,6 +17,9 @@ type Props = {
 };
 
 export function ReceiptCard({ receipt, onDownload, isGenerating, error }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <Card style={styles.card}>
       <View style={styles.topRow}>
@@ -42,53 +46,54 @@ export function ReceiptCard({ receipt, onDownload, isGenerating, error }: Props)
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    marginBottom: 12,
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  reference: {
-    fontFamily: fonts.mono,
-    fontSize: 12,
-    color: colors.text,
-  },
-  amount: {
-    fontFamily: fonts.heading,
-    fontSize: 16,
-    color: colors.success,
-  },
-  billInfo: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.text,
-    marginBottom: 3,
-  },
-  date: {
-    fontFamily: fonts.mono,
-    fontSize: 10,
-    color: colors.textSecondary,
-    marginBottom: 12,
-  },
-  downloadRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    alignSelf: 'flex-start',
-  },
-  downloadLabel: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 12,
-    color: colors.accent,
-  },
-  errorText: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.danger,
-    marginTop: 6,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    card: {
+      marginBottom: 12,
+    },
+    topRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 6,
+    },
+    reference: {
+      fontFamily: fonts.mono,
+      fontSize: 12,
+      color: colors.text,
+    },
+    amount: {
+      fontFamily: fonts.heading,
+      fontSize: 16,
+      color: colors.success,
+    },
+    billInfo: {
+      fontFamily: fonts.body,
+      fontSize: 12,
+      color: colors.text,
+      marginBottom: 3,
+    },
+    date: {
+      fontFamily: fonts.mono,
+      fontSize: 10,
+      color: colors.textSecondary,
+      marginBottom: 12,
+    },
+    downloadRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 7,
+      alignSelf: 'flex-start',
+    },
+    downloadLabel: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 12,
+      color: colors.accent,
+    },
+    errorText: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.danger,
+      marginTop: 6,
+    },
+  });

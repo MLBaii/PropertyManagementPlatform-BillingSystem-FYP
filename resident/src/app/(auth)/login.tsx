@@ -8,7 +8,8 @@ import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { Screen } from '@/components/ui/Screen';
 import { TextField } from '@/components/ui/TextField';
 import { useAuth } from '@/services/auth/AuthContext';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 function isValidEmail(email: string): boolean {
@@ -16,6 +17,8 @@ function isValidEmail(email: string): boolean {
 }
 
 export default function LoginScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const { login } = useAuth();
   const { sessionExpired } = useLocalSearchParams<{ sessionExpired?: string }>();
   const [email, setEmail] = useState('');
@@ -124,61 +127,62 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingVertical: 32,
-  },
-  logoWrap: {
-    alignItems: 'center',
-    marginBottom: 34,
-  },
-  logoBadge: {
-    width: 60,
-    height: 60,
-    borderRadius: 16,
-    backgroundColor: colors.accentSoft,
-    borderWidth: 1,
-    borderColor: colors.accentLine,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 18,
-  },
-  logoLetter: {
-    fontFamily: fonts.heading,
-    fontSize: 28,
-    color: colors.accent,
-  },
-  title: {
-    fontFamily: fonts.heading,
-    fontSize: 26,
-    letterSpacing: -0.52, // -0.02em at 26px, per .screen-title in the mockup
-    color: colors.text,
-    marginBottom: 6,
-  },
-  subtitle: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-  },
-  forgotWrap: {
-    alignSelf: 'flex-end',
-    marginBottom: 22,
-  },
-  forgotText: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 13,
-    color: colors.accent,
-  },
-  footnote: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 20,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    flex: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      paddingVertical: 32,
+    },
+    logoWrap: {
+      alignItems: 'center',
+      marginBottom: 34,
+    },
+    logoBadge: {
+      width: 60,
+      height: 60,
+      borderRadius: 16,
+      backgroundColor: colors.accentSoft,
+      borderWidth: 1,
+      borderColor: colors.accentLine,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 18,
+    },
+    logoLetter: {
+      fontFamily: fonts.heading,
+      fontSize: 28,
+      color: colors.accent,
+    },
+    title: {
+      fontFamily: fonts.heading,
+      fontSize: 26,
+      letterSpacing: -0.52, // -0.02em at 26px, per .screen-title in the mockup
+      color: colors.text,
+      marginBottom: 6,
+    },
+    subtitle: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+    },
+    forgotWrap: {
+      alignSelf: 'flex-end',
+      marginBottom: 22,
+    },
+    forgotText: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: colors.accent,
+    },
+    footnote: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      marginTop: 20,
+    },
+  });

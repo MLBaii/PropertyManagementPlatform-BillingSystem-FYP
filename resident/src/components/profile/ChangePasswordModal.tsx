@@ -6,7 +6,8 @@ import { ModalSheet } from '@/components/ui/ModalSheet';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { TextField } from '@/components/ui/TextField';
 import { changePassword } from '@/services/profile/profileService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 type Props = {
@@ -15,6 +16,8 @@ type Props = {
 };
 
 export function ChangePasswordModal({ visible, onClose }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -112,11 +115,12 @@ export function ChangePasswordModal({ visible, onClose }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  success: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 13,
-    color: colors.success,
-    marginBottom: 14,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    success: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: colors.success,
+      marginBottom: 14,
+    },
+  });

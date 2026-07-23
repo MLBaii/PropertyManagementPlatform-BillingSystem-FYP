@@ -5,7 +5,8 @@ import { GhostButton } from '@/components/ui/GhostButton';
 import { ModalSheet } from '@/components/ui/ModalSheet';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { AppNotification } from '@/services/notifications/notificationsService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 import { formatRelativeTime } from '@/utils/formatDate';
 
@@ -16,6 +17,9 @@ type Props = {
 };
 
 export function NotificationDetailModal({ notification, onMarkAsRead, onClose }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <ModalSheet visible={notification !== null} title={notification?.title ?? ''} onClose={onClose}>
       {notification && (
@@ -34,21 +38,22 @@ export function NotificationDetailModal({ notification, onMarkAsRead, onClose }:
   );
 }
 
-const styles = StyleSheet.create({
-  timestamp: {
-    fontFamily: fonts.mono,
-    fontSize: 11,
-    color: colors.textSecondary,
-    marginBottom: 10,
-  },
-  body: {
-    fontFamily: fonts.body,
-    fontSize: 14,
-    lineHeight: 20,
-    color: colors.text,
-    marginBottom: 20,
-  },
-  actions: {
-    gap: 10,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    timestamp: {
+      fontFamily: fonts.mono,
+      fontSize: 11,
+      color: colors.textSecondary,
+      marginBottom: 10,
+    },
+    body: {
+      fontFamily: fonts.body,
+      fontSize: 14,
+      lineHeight: 20,
+      color: colors.text,
+      marginBottom: 20,
+    },
+    actions: {
+      gap: 10,
+    },
+  });

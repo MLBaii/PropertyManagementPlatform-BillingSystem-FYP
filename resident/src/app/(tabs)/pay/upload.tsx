@@ -11,7 +11,8 @@ import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { Screen } from '@/components/ui/Screen';
 import { Bill, getBills } from '@/services/bills/billsService';
 import { PaymentProof, submitPaymentProof } from '@/services/paymentProofs/paymentProofService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 import { formatBillingPeriod } from '@/utils/formatDate';
 import { formatFileSize } from '@/utils/formatFileSize';
@@ -31,6 +32,8 @@ type PickedFileEntry = { file: PickedFile; source: FileSource };
 const MAX_FILES = 3;
 
 export default function UploadProofScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const { billId } = useLocalSearchParams<{ billId?: string }>();
   const [step, setStep] = useState<Step>(1);
 
@@ -289,186 +292,187 @@ export default function UploadProofScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  scrollContent: {
-    paddingTop: 10,
-    paddingBottom: 32,
-  },
-  header: {
-    marginVertical: 4,
-    marginBottom: 16,
-  },
-  eyebrow: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-  },
-  title: {
-    fontFamily: fonts.heading,
-    fontSize: 24,
-    letterSpacing: -0.48,
-    color: colors.text,
-    marginTop: 2,
-  },
-  sourceRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 16,
-  },
-  fileList: {
-    marginBottom: 8,
-  },
-  previewCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 10,
-  },
-  previewIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    backgroundColor: colors.surface2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  previewTextCol: {
-    flex: 1,
-  },
-  previewName: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.text,
-  },
-  previewMeta: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  removeButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  limitNote: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.textSecondary,
-    marginBottom: 12,
-  },
-  sectionEyebrow: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-    marginBottom: 10,
-  },
-  centered: {
-    alignItems: 'center',
-    paddingVertical: 16,
-  },
-  errorText: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.danger,
-    marginBottom: 12,
-  },
-  emptyText: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    marginBottom: 12,
-  },
-  continueWrap: {
-    marginTop: 8,
-    gap: 14,
-  },
-  backLink: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  summaryCard: {
-    marginBottom: 18,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 11,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  summaryRowBorder: {
-    borderBottomWidth: 1,
-  },
-  summaryReference: {
-    fontFamily: fonts.mono,
-    fontSize: 12,
-    color: colors.text,
-  },
-  summaryPeriod: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  summaryAmount: {
-    fontFamily: fonts.mono,
-    fontSize: 13,
-    color: colors.text,
-  },
-  totalRow: {
-    borderBottomWidth: 0,
-    paddingTop: 13,
-  },
-  totalLabel: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    color: colors.text,
-  },
-  totalAmount: {
-    fontFamily: fonts.monoMedium,
-    fontSize: 16,
-    color: colors.accent,
-  },
-  centeredScreen: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-  },
-  successIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.successBg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 6,
-  },
-  successTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 22,
-    color: colors.text,
-  },
-  successNote: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 4,
-    marginBottom: 12,
-    paddingHorizontal: 24,
-  },
-  successButtonWrap: {
-    width: '100%',
-    paddingHorizontal: 24,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    scrollContent: {
+      paddingTop: 10,
+      paddingBottom: 32,
+    },
+    header: {
+      marginVertical: 4,
+      marginBottom: 16,
+    },
+    eyebrow: {
+      fontFamily: fonts.body,
+      fontSize: 10,
+      letterSpacing: 1.5,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+    },
+    title: {
+      fontFamily: fonts.heading,
+      fontSize: 24,
+      letterSpacing: -0.48,
+      color: colors.text,
+      marginTop: 2,
+    },
+    sourceRow: {
+      flexDirection: 'row',
+      gap: 10,
+      marginBottom: 16,
+    },
+    fileList: {
+      marginBottom: 8,
+    },
+    previewCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      marginBottom: 10,
+    },
+    previewIcon: {
+      width: 44,
+      height: 44,
+      borderRadius: 10,
+      backgroundColor: colors.surface2,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    previewTextCol: {
+      flex: 1,
+    },
+    previewName: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.text,
+    },
+    previewMeta: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.textSecondary,
+      marginTop: 2,
+    },
+    removeButton: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    limitNote: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.textSecondary,
+      marginBottom: 12,
+    },
+    sectionEyebrow: {
+      fontFamily: fonts.body,
+      fontSize: 10,
+      letterSpacing: 1.5,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+      marginBottom: 10,
+    },
+    centered: {
+      alignItems: 'center',
+      paddingVertical: 16,
+    },
+    errorText: {
+      fontFamily: fonts.body,
+      fontSize: 12,
+      color: colors.danger,
+      marginBottom: 12,
+    },
+    emptyText: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      marginBottom: 12,
+    },
+    continueWrap: {
+      marginTop: 8,
+      gap: 14,
+    },
+    backLink: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    summaryCard: {
+      marginBottom: 18,
+    },
+    summaryRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 11,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    summaryRowBorder: {
+      borderBottomWidth: 1,
+    },
+    summaryReference: {
+      fontFamily: fonts.mono,
+      fontSize: 12,
+      color: colors.text,
+    },
+    summaryPeriod: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.textSecondary,
+      marginTop: 2,
+    },
+    summaryAmount: {
+      fontFamily: fonts.mono,
+      fontSize: 13,
+      color: colors.text,
+    },
+    totalRow: {
+      borderBottomWidth: 0,
+      paddingTop: 13,
+    },
+    totalLabel: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 14,
+      color: colors.text,
+    },
+    totalAmount: {
+      fontFamily: fonts.monoMedium,
+      fontSize: 16,
+      color: colors.accent,
+    },
+    centeredScreen: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 10,
+    },
+    successIcon: {
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+      backgroundColor: colors.successBg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 6,
+    },
+    successTitle: {
+      fontFamily: fonts.heading,
+      fontSize: 22,
+      color: colors.text,
+    },
+    successNote: {
+      fontFamily: fonts.body,
+      fontSize: 12,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      marginTop: 4,
+      marginBottom: 12,
+      paddingHorizontal: 24,
+    },
+    successButtonWrap: {
+      width: '100%',
+      paddingHorizontal: 24,
+    },
+  });

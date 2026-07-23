@@ -9,11 +9,14 @@ import { Screen } from '@/components/ui/Screen';
 import { useAuth } from '@/services/auth/AuthContext';
 import { getPaymentProofs, PaymentProof } from '@/services/paymentProofs/paymentProofService';
 import { getReceiptById, getReceipts, Receipt } from '@/services/receipts/receiptsService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 import { generateAndShareReceiptPdf } from '@/utils/generateReceiptPdf';
 
 export default function PayScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const { resident } = useAuth();
 
   const [proofs, setProofs] = useState<PaymentProof[]>([]);
@@ -148,95 +151,96 @@ export default function PayScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  scrollContent: {
-    paddingTop: 10,
-    paddingBottom: 32,
-  },
-  header: {
-    marginVertical: 4,
-    marginBottom: 18,
-  },
-  eyebrow: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-  },
-  title: {
-    fontFamily: fonts.heading,
-    fontSize: 26,
-    letterSpacing: -0.52,
-    color: colors.text,
-  },
-  uploadCta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: colors.accent,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 26,
-  },
-  uploadCtaPressed: {
-    opacity: 0.85,
-  },
-  uploadIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: 'rgba(26, 20, 16, 0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  uploadTextCol: {
-    flex: 1,
-  },
-  uploadTitle: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    color: colors.onAccent,
-  },
-  uploadSubtitle: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.onAccent,
-    opacity: 0.8,
-    marginTop: 2,
-  },
-  sectionEyebrow: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-    marginBottom: 10,
-  },
-  receiptsEyebrow: {
-    marginTop: 22,
-  },
-  centered: {
-    alignItems: 'center',
-    paddingTop: 24,
-    gap: 10,
-  },
-  errorText: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  retryLink: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 13,
-    color: colors.accent,
-  },
-  emptyText: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    paddingHorizontal: 12,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    scrollContent: {
+      paddingTop: 10,
+      paddingBottom: 32,
+    },
+    header: {
+      marginVertical: 4,
+      marginBottom: 18,
+    },
+    eyebrow: {
+      fontFamily: fonts.body,
+      fontSize: 10,
+      letterSpacing: 1.5,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+    },
+    title: {
+      fontFamily: fonts.heading,
+      fontSize: 26,
+      letterSpacing: -0.52,
+      color: colors.text,
+    },
+    uploadCta: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      backgroundColor: colors.accent,
+      borderRadius: 16,
+      padding: 16,
+      marginBottom: 26,
+    },
+    uploadCtaPressed: {
+      opacity: 0.85,
+    },
+    uploadIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: 10,
+      backgroundColor: 'rgba(26, 20, 16, 0.18)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    uploadTextCol: {
+      flex: 1,
+    },
+    uploadTitle: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 14,
+      color: colors.onAccent,
+    },
+    uploadSubtitle: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.onAccent,
+      opacity: 0.8,
+      marginTop: 2,
+    },
+    sectionEyebrow: {
+      fontFamily: fonts.body,
+      fontSize: 10,
+      letterSpacing: 1.5,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+      marginBottom: 10,
+    },
+    receiptsEyebrow: {
+      marginTop: 22,
+    },
+    centered: {
+      alignItems: 'center',
+      paddingTop: 24,
+      gap: 10,
+    },
+    errorText: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    retryLink: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: colors.accent,
+    },
+    emptyText: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      paddingHorizontal: 12,
+    },
+  });

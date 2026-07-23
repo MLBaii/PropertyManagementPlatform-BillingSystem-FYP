@@ -2,7 +2,8 @@ import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 type Props = {
@@ -14,6 +15,9 @@ type Props = {
 };
 
 export function SourceButton({ icon, label, onPress, disabled, selected }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <Pressable
       onPress={onPress}
@@ -36,42 +40,43 @@ export function SourceButton({ icon, label, onPress, disabled, selected }: Props
   );
 }
 
-const styles = StyleSheet.create({
-  button: {
-    flex: 1,
-    height: 72,
-    borderRadius: 14,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  selected: {
-    borderColor: colors.accentLine,
-    backgroundColor: colors.accentSoft,
-  },
-  pressed: {
-    opacity: 0.8,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  label: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 11,
-    color: colors.text,
-  },
-  tick: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    button: {
+      flex: 1,
+      height: 72,
+      borderRadius: 14,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+    },
+    selected: {
+      borderColor: colors.accentLine,
+      backgroundColor: colors.accentSoft,
+    },
+    pressed: {
+      opacity: 0.8,
+    },
+    disabled: {
+      opacity: 0.5,
+    },
+    label: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 11,
+      color: colors.text,
+    },
+    tick: {
+      position: 'absolute',
+      top: 6,
+      right: 6,
+      width: 14,
+      height: 14,
+      borderRadius: 7,
+      backgroundColor: colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  });

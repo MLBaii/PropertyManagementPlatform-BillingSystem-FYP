@@ -3,7 +3,8 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { ActivityItem } from '@/services/dashboard/dashboardService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 type Props = {
@@ -12,6 +13,8 @@ type Props = {
 };
 
 export function ActivityRow({ activity, showBorder = true }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const isPayment = activity.type === 'PaymentConfirmed';
   const amountColor = isPayment ? colors.success : colors.textSecondary;
   const sign = isPayment ? '−' : '+';
@@ -32,41 +35,42 @@ export function ActivityRow({ activity, showBorder = true }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 12,
-  },
-  rowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  iconWrap: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: colors.surface2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  textCol: {
-    flex: 1,
-  },
-  description: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.text,
-  },
-  reference: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  amount: {
-    fontFamily: fonts.mono,
-    fontSize: 12,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      paddingVertical: 12,
+    },
+    rowBorder: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    iconWrap: {
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      backgroundColor: colors.surface2,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    textCol: {
+      flex: 1,
+    },
+    description: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.text,
+    },
+    reference: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.textSecondary,
+      marginTop: 2,
+    },
+    amount: {
+      fontFamily: fonts.mono,
+      fontSize: 12,
+    },
+  });

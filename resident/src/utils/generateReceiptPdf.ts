@@ -1,5 +1,4 @@
 import * as Print from 'expo-print';
-import * as Sharing from 'expo-sharing';
 
 import { ReceiptDetail } from '@/services/receipts/receiptsService';
 import { escapeHtml } from '@/utils/escapeHtml';
@@ -161,24 +160,15 @@ function buildReceiptHtml({ receipt, residentName }: ReceiptPdfInput): string {
 </html>`;
 }
 
-// Same on-device flow and fix as generateAndShareBillPdf: share directly from the
-// printToFileAsync cache URI rather than touching expo-file-system at all — see that file's
-// comment for why (renaming/copying via expo-file-system throws a READ-permission error on
-// a physical Android device in Expo Go).
+// Same fix and reasoning as generateAndShareBillPdf: renders via the native print dialog
+// (Print.printAsync) instead of printToFileAsync + Sharing.shareAsync, since both
+// expo-file-system and expo-sharing gate reads through the same Expo-Go-isolated
+// FilePermissionService that expo-print's own output file never satisfies — see that file's
+// comment for the full explanation.
 export async function generateAndShareReceiptPdf(input: ReceiptPdfInput): Promise<void> {
   try {
     const html = buildReceiptHtml(input);
-    const { uri } = await Print.printToFileAsync({ html, base64: false });
-
-    const filename = `Receipt_${input.receipt.receiptNumber}.pdf`;
-    const canShare = await Sharing.isAvailableAsync();
-    if (canShare) {
-      await Sharing.shareAsync(uri, {
-        mimeType: 'application/pdf',
-        dialogTitle: filename,
-        UTI: 'com.adobe.pdf',
-      });
-    }
+    await Print.printAsync({ html });
   } catch (err) {
     console.error(
       '[generateAndShareReceiptPdf] failed:',

@@ -10,13 +10,16 @@ import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { Screen } from '@/components/ui/Screen';
 import { useAuth } from '@/services/auth/AuthContext';
 import { BillDetail, getBillById } from '@/services/bills/billsService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 import { getCountdownColor, getCountdownLabel, shouldShowDueDateLine } from '@/utils/billStatus';
 import { formatBillingPeriod, formatShortDate } from '@/utils/formatDate';
 import { generateAndShareBillPdf } from '@/utils/generateBillPdf';
 
 export default function BillDetailScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const { billId } = useLocalSearchParams<{ billId: string }>();
   const { resident } = useAuth();
   const [bill, setBill] = useState<BillDetail | null>(null);
@@ -73,7 +76,7 @@ export default function BillDetailScreen() {
     );
   }
 
-  const countdownColor = getCountdownColor(bill.status);
+  const countdownColor = getCountdownColor(bill.status, colors);
   const countdownLabel = getCountdownLabel(bill);
   const showDueDate = shouldShowDueDateLine(bill.status);
 
@@ -153,113 +156,114 @@ export default function BillDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  centered: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadError: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  scrollContent: {
-    paddingTop: 10,
-    paddingBottom: 32,
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-  },
-  backRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  backText: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 13,
-    color: colors.accent,
-  },
-  eyebrow: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-  },
-  title: {
-    fontFamily: fonts.heading,
-    fontSize: 26,
-    letterSpacing: -0.52,
-    color: colors.text,
-    marginTop: 2,
-    marginBottom: 4,
-  },
-  countdown: {
-    fontFamily: fonts.mono,
-    fontSize: 11,
-    marginBottom: 18,
-  },
-  lineItemsCard: {
-    marginBottom: 16,
-  },
-  lineItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 11,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  lineLabel: {
-    fontFamily: fonts.body,
-    fontSize: 13.5,
-    color: colors.textSecondary,
-  },
-  lineAmount: {
-    fontFamily: fonts.mono,
-    fontSize: 13.5,
-    color: colors.text,
-  },
-  penaltyText: {
-    color: colors.danger,
-  },
-  totalRow: {
-    paddingTop: 13,
-    borderBottomWidth: 0,
-  },
-  totalLabel: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    color: colors.text,
-  },
-  totalAmount: {
-    fontFamily: fonts.monoMedium,
-    fontSize: 16,
-    color: colors.accent,
-  },
-  actions: {
-    gap: 14,
-  },
-  pdfError: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.danger,
-    textAlign: 'center',
-    marginTop: -6,
-  },
-  disputeLink: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    paddingTop: 6,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    centered: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    loadError: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    scrollContent: {
+      paddingTop: 10,
+      paddingBottom: 32,
+    },
+    topRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 14,
+    },
+    backRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    badgeRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    backText: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: colors.accent,
+    },
+    eyebrow: {
+      fontFamily: fonts.body,
+      fontSize: 10,
+      letterSpacing: 1.5,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+    },
+    title: {
+      fontFamily: fonts.heading,
+      fontSize: 26,
+      letterSpacing: -0.52,
+      color: colors.text,
+      marginTop: 2,
+      marginBottom: 4,
+    },
+    countdown: {
+      fontFamily: fonts.mono,
+      fontSize: 11,
+      marginBottom: 18,
+    },
+    lineItemsCard: {
+      marginBottom: 16,
+    },
+    lineItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 11,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    lineLabel: {
+      fontFamily: fonts.body,
+      fontSize: 13.5,
+      color: colors.textSecondary,
+    },
+    lineAmount: {
+      fontFamily: fonts.mono,
+      fontSize: 13.5,
+      color: colors.text,
+    },
+    penaltyText: {
+      color: colors.danger,
+    },
+    totalRow: {
+      paddingTop: 13,
+      borderBottomWidth: 0,
+    },
+    totalLabel: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 14,
+      color: colors.text,
+    },
+    totalAmount: {
+      fontFamily: fonts.monoMedium,
+      fontSize: 16,
+      color: colors.accent,
+    },
+    actions: {
+      gap: 14,
+    },
+    pdfError: {
+      fontFamily: fonts.body,
+      fontSize: 12,
+      color: colors.danger,
+      textAlign: 'center',
+      marginTop: -6,
+    },
+    disputeLink: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      paddingTop: 6,
+    },
+  });

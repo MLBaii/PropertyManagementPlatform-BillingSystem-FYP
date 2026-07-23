@@ -8,10 +8,13 @@ import { Card } from '@/components/ui/Card';
 import { Screen } from '@/components/ui/Screen';
 import { useNotifications } from '@/services/notifications/NotificationsContext';
 import { AppNotification } from '@/services/notifications/notificationsService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 export default function AlertsScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const { notifications, unreadCount, isLoading, loadError, refresh, markAsRead, markAllAsRead } =
     useNotifications();
   const [openNotification, setOpenNotification] = useState<AppNotification | null>(null);
@@ -86,65 +89,66 @@ export default function AlertsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  scrollContent: {
-    paddingTop: 10,
-    paddingBottom: 32,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginVertical: 4,
-    marginBottom: 16,
-  },
-  eyebrow: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-  },
-  title: {
-    fontFamily: fonts.heading,
-    fontSize: 26,
-    letterSpacing: -0.52,
-    color: colors.text,
-    marginTop: 2,
-  },
-  markAllLink: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 12,
-    color: colors.accent,
-  },
-  markAllLinkDisabled: {
-    color: colors.textSecondary,
-    opacity: 0.6,
-  },
-  listCard: {
-    paddingVertical: 2,
-    paddingHorizontal: 16,
-  },
-  centered: {
-    alignItems: 'center',
-    paddingTop: 40,
-    gap: 10,
-  },
-  errorText: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  retryLink: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 13,
-    color: colors.accent,
-  },
-  emptyText: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    scrollContent: {
+      paddingTop: 10,
+      paddingBottom: 32,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginVertical: 4,
+      marginBottom: 16,
+    },
+    eyebrow: {
+      fontFamily: fonts.body,
+      fontSize: 10,
+      letterSpacing: 1.5,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+    },
+    title: {
+      fontFamily: fonts.heading,
+      fontSize: 26,
+      letterSpacing: -0.52,
+      color: colors.text,
+      marginTop: 2,
+    },
+    markAllLink: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 12,
+      color: colors.accent,
+    },
+    markAllLinkDisabled: {
+      color: colors.textSecondary,
+      opacity: 0.6,
+    },
+    listCard: {
+      paddingVertical: 2,
+      paddingHorizontal: 16,
+    },
+    centered: {
+      alignItems: 'center',
+      paddingTop: 40,
+      gap: 10,
+    },
+    errorText: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    retryLink: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: colors.accent,
+    },
+    emptyText: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+  });

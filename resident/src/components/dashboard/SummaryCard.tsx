@@ -2,7 +2,8 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '@/components/ui/Card';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 type Badge = {
@@ -20,6 +21,8 @@ type Props = {
 };
 
 export function SummaryCard({ eyebrow, amount, color, variant = 'secondary', badge }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const isPrimary = variant === 'primary';
 
   return (
@@ -40,47 +43,48 @@ export function SummaryCard({ eyebrow, amount, color, variant = 'secondary', bad
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    flex: 1,
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  eyebrow: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-  },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  badgeLabel: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 11,
-  },
-  amountPrimary: {
-    fontFamily: fonts.heading,
-    fontSize: 32,
-    marginTop: 8,
-  },
-  amountSecondary: {
-    fontFamily: fonts.heading,
-    fontSize: 20,
-    marginTop: 6,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    card: {
+      flex: 1,
+    },
+    topRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    eyebrow: {
+      fontFamily: fonts.body,
+      fontSize: 10,
+      letterSpacing: 1.5,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+    },
+    badge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 20,
+    },
+    dot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+    },
+    badgeLabel: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 11,
+    },
+    amountPrimary: {
+      fontFamily: fonts.heading,
+      fontSize: 32,
+      marginTop: 8,
+    },
+    amountSecondary: {
+      fontFamily: fonts.heading,
+      fontSize: 20,
+      marginTop: 6,
+    },
+  });

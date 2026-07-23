@@ -1,7 +1,8 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 export type DisputeFilter = 'All' | 'Open' | 'UnderReview' | 'Resolved' | 'Rejected';
@@ -22,6 +23,9 @@ type Props = {
 };
 
 export function DisputeFilterRow({ value, onChange }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
       {FILTERS.map((filter) => {
@@ -42,30 +46,31 @@ export function DisputeFilterRow({ value, onChange }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    gap: 8,
-    paddingBottom: 4,
-  },
-  pill: {
-    paddingHorizontal: 13,
-    paddingVertical: 7,
-    borderRadius: 20,
-    backgroundColor: colors.surface2,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  pillActive: {
-    backgroundColor: colors.accentSoft,
-    borderColor: colors.accentLine,
-  },
-  label: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  labelActive: {
-    color: colors.accent,
-    fontFamily: fonts.bodyMedium,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    row: {
+      gap: 8,
+      paddingBottom: 4,
+    },
+    pill: {
+      paddingHorizontal: 13,
+      paddingVertical: 7,
+      borderRadius: 20,
+      backgroundColor: colors.surface2,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    pillActive: {
+      backgroundColor: colors.accentSoft,
+      borderColor: colors.accentLine,
+    },
+    label: {
+      fontFamily: fonts.body,
+      fontSize: 12,
+      color: colors.textSecondary,
+    },
+    labelActive: {
+      color: colors.accent,
+      fontFamily: fonts.bodyMedium,
+    },
+  });

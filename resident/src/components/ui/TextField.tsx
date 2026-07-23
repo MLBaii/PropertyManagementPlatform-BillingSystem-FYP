@@ -2,7 +2,8 @@ import { Feather } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
 
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 type Props = TextInputProps & {
@@ -15,6 +16,8 @@ type Props = TextInputProps & {
 };
 
 export function TextField({ label, error, style, editable, isPassword, ...inputProps }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const [isVisible, setIsVisible] = useState(false);
 
   return (
@@ -49,50 +52,51 @@ export function TextField({ label, error, style, editable, isPassword, ...inputP
   );
 }
 
-const styles = StyleSheet.create({
-  field: {
-    marginBottom: 14,
-  },
-  label: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginBottom: 7,
-    fontFamily: fonts.bodyMedium,
-  },
-  inputWrap: {
-    justifyContent: 'center',
-  },
-  input: {
-    height: 48,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    color: colors.text,
-    fontSize: 14,
-    fontFamily: fonts.body,
-  },
-  inputWithIcon: {
-    paddingRight: 44,
-  },
-  eyeButton: {
-    position: 'absolute',
-    right: 14,
-    height: 48,
-    justifyContent: 'center',
-  },
-  inputError: {
-    borderColor: colors.danger,
-  },
-  inputDisabled: {
-    color: colors.textSecondary,
-    opacity: 0.7,
-  },
-  errorText: {
-    color: colors.danger,
-    fontSize: 11,
-    marginTop: 6,
-    fontFamily: fonts.body,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    field: {
+      marginBottom: 14,
+    },
+    label: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginBottom: 7,
+      fontFamily: fonts.bodyMedium,
+    },
+    inputWrap: {
+      justifyContent: 'center',
+    },
+    input: {
+      height: 48,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      color: colors.text,
+      fontSize: 14,
+      fontFamily: fonts.body,
+    },
+    inputWithIcon: {
+      paddingRight: 44,
+    },
+    eyeButton: {
+      position: 'absolute',
+      right: 14,
+      height: 48,
+      justifyContent: 'center',
+    },
+    inputError: {
+      borderColor: colors.danger,
+    },
+    inputDisabled: {
+      color: colors.textSecondary,
+      opacity: 0.7,
+    },
+    errorText: {
+      color: colors.danger,
+      fontSize: 11,
+      marginTop: 6,
+      fontFamily: fonts.body,
+    },
+  });

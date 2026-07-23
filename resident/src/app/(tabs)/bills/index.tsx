@@ -6,10 +6,13 @@ import { BillCard } from '@/components/bills/BillCard';
 import { BillFilter, BillFilterRow, FILTER_LABELS } from '@/components/bills/BillFilterRow';
 import { Screen } from '@/components/ui/Screen';
 import { Bill, getBills } from '@/services/bills/billsService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 export default function BillsListScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const [bills, setBills] = useState<Bill[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | undefined>();
@@ -114,58 +117,59 @@ export default function BillsListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  centered: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadError: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  listContent: {
-    paddingTop: 10,
-    paddingBottom: 32,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    marginVertical: 4,
-    marginBottom: 14,
-  },
-  disputeHistoryLink: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 12,
-    color: colors.accent,
-    marginBottom: 3,
-  },
-  eyebrow: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-  },
-  title: {
-    fontFamily: fonts.heading,
-    fontSize: 26,
-    letterSpacing: -0.52,
-    color: colors.text,
-  },
-  filterWrap: {
-    marginBottom: 16,
-  },
-  emptyState: {
-    paddingTop: 40,
-    paddingHorizontal: 12,
-  },
-  emptyText: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    centered: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    loadError: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    listContent: {
+      paddingTop: 10,
+      paddingBottom: 32,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      justifyContent: 'space-between',
+      marginVertical: 4,
+      marginBottom: 14,
+    },
+    disputeHistoryLink: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 12,
+      color: colors.accent,
+      marginBottom: 3,
+    },
+    eyebrow: {
+      fontFamily: fonts.body,
+      fontSize: 10,
+      letterSpacing: 1.5,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+    },
+    title: {
+      fontFamily: fonts.heading,
+      fontSize: 26,
+      letterSpacing: -0.52,
+      color: colors.text,
+    },
+    filterWrap: {
+      marginBottom: 16,
+    },
+    emptyState: {
+      paddingTop: 40,
+      paddingHorizontal: 12,
+    },
+    emptyText: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+  });

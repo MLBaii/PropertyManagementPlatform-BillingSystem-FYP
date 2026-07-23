@@ -2,7 +2,8 @@ import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 type Props = {
@@ -13,6 +14,9 @@ type Props = {
 };
 
 export function SettingsLinkRow({ label, onPress, destructive, showBorder = true }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <Pressable
       onPress={onPress}
@@ -24,23 +28,24 @@ export function SettingsLinkRow({ label, onPress, destructive, showBorder = true
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 15,
-  },
-  rowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  label: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.text,
-  },
-  destructiveLabel: {
-    color: colors.danger,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 15,
+    },
+    rowBorder: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    label: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.text,
+    },
+    destructiveLabel: {
+      color: colors.danger,
+    },
+  });

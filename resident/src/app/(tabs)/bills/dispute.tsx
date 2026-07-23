@@ -17,11 +17,14 @@ import {
   MIN_DISPUTE_REASON_LENGTH,
   submitDispute,
 } from '@/services/disputes/disputesService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 import { formatBillingPeriod } from '@/utils/formatDate';
 
 export default function DisputeBillScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const { billId } = useLocalSearchParams<{ billId: string }>();
   const numericBillId = Number(billId);
 
@@ -60,7 +63,7 @@ export default function DisputeBillScreen() {
 
   const countColor = useMemo(
     () => (meetsMinLength ? colors.success : colors.textSecondary),
-    [meetsMinLength]
+    [meetsMinLength, colors]
   );
 
   const handleSubmit = async () => {
@@ -190,136 +193,137 @@ export default function DisputeBillScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  centered: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadError: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  scrollContent: {
-    paddingTop: 10,
-    paddingBottom: 32,
-  },
-  header: {
-    marginBottom: 16,
-  },
-  backLink: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 13,
-    color: colors.accent,
-    marginBottom: 12,
-  },
-  title: {
-    fontFamily: fonts.heading,
-    fontSize: 24,
-    letterSpacing: -0.48,
-    color: colors.text,
-  },
-  eyebrow: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-    marginBottom: 8,
-  },
-  summaryCard: {
-    marginBottom: 18,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  summaryReference: {
-    fontFamily: fonts.mono,
-    fontSize: 11,
-    color: colors.textSecondary,
-  },
-  summaryPeriod: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.text,
-    marginTop: 2,
-  },
-  textarea: {
-    height: 110,
-    paddingTop: 12,
-    textAlignVertical: 'top',
-  },
-  countRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: -8,
-    marginBottom: 18,
-  },
-  minLengthNote: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.textSecondary,
-  },
-  countText: {
-    fontFamily: fonts.mono,
-    fontSize: 11,
-  },
-  errorText: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.danger,
-    marginBottom: 12,
-  },
-  submitWrap: {
-    gap: 4,
-  },
-  footerNote: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 8,
-  },
-  confirmationCard: {
-    marginBottom: 18,
-  },
-  confirmationTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-  },
-  confirmationBillRef: {
-    fontFamily: fonts.mono,
-    fontSize: 13,
-    color: colors.text,
-  },
-  confirmationReasonLabel: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-    marginBottom: 5,
-    marginTop: 10,
-  },
-  confirmationReason: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.text,
-    lineHeight: 19,
-  },
-  confirmationAdminResponse: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    lineHeight: 19,
-  },
-  doneWrap: {
-    marginTop: 4,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    centered: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    loadError: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    scrollContent: {
+      paddingTop: 10,
+      paddingBottom: 32,
+    },
+    header: {
+      marginBottom: 16,
+    },
+    backLink: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: colors.accent,
+      marginBottom: 12,
+    },
+    title: {
+      fontFamily: fonts.heading,
+      fontSize: 24,
+      letterSpacing: -0.48,
+      color: colors.text,
+    },
+    eyebrow: {
+      fontFamily: fonts.body,
+      fontSize: 10,
+      letterSpacing: 1.5,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+      marginBottom: 8,
+    },
+    summaryCard: {
+      marginBottom: 18,
+    },
+    summaryRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    summaryReference: {
+      fontFamily: fonts.mono,
+      fontSize: 11,
+      color: colors.textSecondary,
+    },
+    summaryPeriod: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.text,
+      marginTop: 2,
+    },
+    textarea: {
+      height: 110,
+      paddingTop: 12,
+      textAlignVertical: 'top',
+    },
+    countRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: -8,
+      marginBottom: 18,
+    },
+    minLengthNote: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.textSecondary,
+    },
+    countText: {
+      fontFamily: fonts.mono,
+      fontSize: 11,
+    },
+    errorText: {
+      fontFamily: fonts.body,
+      fontSize: 12,
+      color: colors.danger,
+      marginBottom: 12,
+    },
+    submitWrap: {
+      gap: 4,
+    },
+    footerNote: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      marginTop: 8,
+    },
+    confirmationCard: {
+      marginBottom: 18,
+    },
+    confirmationTopRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 14,
+    },
+    confirmationBillRef: {
+      fontFamily: fonts.mono,
+      fontSize: 13,
+      color: colors.text,
+    },
+    confirmationReasonLabel: {
+      fontFamily: fonts.body,
+      fontSize: 10,
+      letterSpacing: 1,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+      marginBottom: 5,
+      marginTop: 10,
+    },
+    confirmationReason: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.text,
+      lineHeight: 19,
+    },
+    confirmationAdminResponse: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      lineHeight: 19,
+    },
+    doneWrap: {
+      marginTop: 4,
+    },
+  });

@@ -3,7 +3,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '@/components/ui/Card';
 import { Dispute } from '@/services/disputes/disputesService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 import { formatBillingPeriod, formatShortDate } from '@/utils/formatDate';
 
@@ -15,6 +16,9 @@ type Props = {
 };
 
 export function DisputeRow({ dispute, onPress }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <Pressable onPress={onPress}>
       <Card style={styles.card}>
@@ -32,37 +36,38 @@ export function DisputeRow({ dispute, onPress }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    marginBottom: 12,
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  reference: {
-    fontFamily: fonts.mono,
-    fontSize: 12,
-    color: colors.text,
-  },
-  period: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginBottom: 8,
-  },
-  reason: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.text,
-    lineHeight: 18,
-    marginBottom: 8,
-  },
-  date: {
-    fontFamily: fonts.mono,
-    fontSize: 10,
-    color: colors.textSecondary,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    card: {
+      marginBottom: 12,
+    },
+    topRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 6,
+    },
+    reference: {
+      fontFamily: fonts.mono,
+      fontSize: 12,
+      color: colors.text,
+    },
+    period: {
+      fontFamily: fonts.body,
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginBottom: 8,
+    },
+    reason: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.text,
+      lineHeight: 18,
+      marginBottom: 8,
+    },
+    date: {
+      fontFamily: fonts.mono,
+      fontSize: 10,
+      color: colors.textSecondary,
+    },
+  });

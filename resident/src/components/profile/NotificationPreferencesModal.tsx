@@ -4,7 +4,8 @@ import { StyleSheet, Switch, Text, View } from 'react-native';
 import { ModalSheet } from '@/components/ui/ModalSheet';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { NotificationPreferences, updateNotificationPreferences } from '@/services/profile/profileService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 type Props = {
@@ -21,6 +22,8 @@ const TOGGLES: { key: keyof NotificationPreferences; label: string }[] = [
 ];
 
 export function NotificationPreferencesModal({ visible, onClose, preferences, onSaved }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const [draft, setDraft] = useState<NotificationPreferences>(preferences);
   const [successMessage, setSuccessMessage] = useState<string | undefined>();
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
@@ -69,30 +72,31 @@ export function NotificationPreferencesModal({ visible, onClose, preferences, on
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  label: {
-    fontFamily: fonts.body,
-    fontSize: 14,
-    color: colors.text,
-  },
-  success: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 13,
-    color: colors.success,
-    marginBottom: 14,
-  },
-  error: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 13,
-    color: colors.danger,
-    marginBottom: 14,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    label: {
+      fontFamily: fonts.body,
+      fontSize: 14,
+      color: colors.text,
+    },
+    success: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: colors.success,
+      marginBottom: 14,
+    },
+    error: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: colors.danger,
+      marginBottom: 14,
+    },
+  });

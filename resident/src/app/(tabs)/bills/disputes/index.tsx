@@ -6,10 +6,13 @@ import { DisputeFilter, DisputeFilterRow, DISPUTE_FILTER_LABELS } from '@/compon
 import { DisputeRow } from '@/components/disputes/DisputeRow';
 import { Screen } from '@/components/ui/Screen';
 import { Dispute, getDisputes } from '@/services/disputes/disputesService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 export default function DisputeHistoryScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | undefined>();
@@ -87,43 +90,44 @@ export default function DisputeHistoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  scrollContent: {
-    paddingTop: 10,
-    paddingBottom: 32,
-  },
-  header: {
-    marginBottom: 16,
-  },
-  backLink: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 13,
-    color: colors.accent,
-    marginBottom: 12,
-  },
-  title: {
-    fontFamily: fonts.heading,
-    fontSize: 24,
-    letterSpacing: -0.48,
-    color: colors.text,
-  },
-  filterWrap: {
-    marginBottom: 16,
-  },
-  centered: {
-    alignItems: 'center',
-    paddingTop: 40,
-  },
-  errorText: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  emptyText: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    scrollContent: {
+      paddingTop: 10,
+      paddingBottom: 32,
+    },
+    header: {
+      marginBottom: 16,
+    },
+    backLink: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: colors.accent,
+      marginBottom: 12,
+    },
+    title: {
+      fontFamily: fonts.heading,
+      fontSize: 24,
+      letterSpacing: -0.48,
+      color: colors.text,
+    },
+    filterWrap: {
+      marginBottom: 16,
+    },
+    centered: {
+      alignItems: 'center',
+      paddingTop: 40,
+    },
+    errorText: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    emptyText: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+  });

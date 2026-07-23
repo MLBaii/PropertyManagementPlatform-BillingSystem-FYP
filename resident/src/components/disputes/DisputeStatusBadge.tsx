@@ -2,22 +2,24 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { DisputeStatus } from '@/services/disputes/disputesService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 type Props = {
   status: DisputeStatus;
 };
 
-const STATUS_CONFIG: Record<DisputeStatus, { label: string; color: string; bg: string }> = {
+const getStatusConfig = (colors: ThemeColors): Record<DisputeStatus, { label: string; color: string; bg: string }> => ({
   Open: { label: 'Open', color: colors.pending, bg: colors.pendingBg },
   UnderReview: { label: 'Under Review', color: colors.unpaid, bg: colors.unpaidBg },
   Resolved: { label: 'Resolved', color: colors.success, bg: colors.successBg },
   Rejected: { label: 'Rejected', color: colors.danger, bg: colors.dangerBg },
-};
+});
 
 export function DisputeStatusBadge({ status }: Props) {
-  const config = STATUS_CONFIG[status];
+  const { colors } = useTheme();
+  const config = getStatusConfig(colors)[status];
 
   return (
     <View style={[styles.badge, { backgroundColor: config.bg }]}>

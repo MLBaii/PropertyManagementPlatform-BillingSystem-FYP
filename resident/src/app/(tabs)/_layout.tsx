@@ -5,7 +5,7 @@ import type { ColorValue } from 'react-native';
 
 import { useAuth } from '@/services/auth/AuthContext';
 import { NotificationsProvider, useNotifications } from '@/services/notifications/NotificationsContext';
-import { colors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 type IconName = ComponentProps<typeof Feather>['name'];
@@ -17,6 +17,7 @@ function tabIcon(name: IconName) {
 }
 
 function TabsNavigator() {
+  const { colors } = useTheme();
   const { unreadCount } = useNotifications();
 
   return (

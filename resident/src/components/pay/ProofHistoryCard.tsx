@@ -4,7 +4,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import { ProofStatusBadge } from '@/components/pay/ProofStatusBadge';
 import { Card } from '@/components/ui/Card';
 import { PaymentProof } from '@/services/paymentProofs/paymentProofService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 import { formatShortDate } from '@/utils/formatDate';
 
@@ -13,6 +14,8 @@ type Props = {
 };
 
 export function ProofHistoryCard({ proof }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const billRefs = proof.taggedBills.map((b) => b.referenceNumber).join(', ');
   const total = proof.taggedBills.reduce((sum, b) => sum + b.amount, 0);
 
@@ -33,42 +36,43 @@ export function ProofHistoryCard({ proof }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    marginBottom: 12,
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  date: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  billRefs: {
-    fontFamily: fonts.mono,
-    fontSize: 11,
-    color: colors.textSecondary,
-    marginBottom: 8,
-  },
-  bottomRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  amount: {
-    fontFamily: fonts.heading,
-    fontSize: 18,
-    color: colors.text,
-  },
-  remarks: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.textSecondary,
-    flexShrink: 1,
-    textAlign: 'right',
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    card: {
+      marginBottom: 12,
+    },
+    topRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 6,
+    },
+    date: {
+      fontFamily: fonts.body,
+      fontSize: 12,
+      color: colors.textSecondary,
+    },
+    billRefs: {
+      fontFamily: fonts.mono,
+      fontSize: 11,
+      color: colors.textSecondary,
+      marginBottom: 8,
+    },
+    bottomRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    amount: {
+      fontFamily: fonts.heading,
+      fontSize: 18,
+      color: colors.text,
+    },
+    remarks: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.textSecondary,
+      flexShrink: 1,
+      textAlign: 'right',
+    },
+  });

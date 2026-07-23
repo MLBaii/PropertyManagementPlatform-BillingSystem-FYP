@@ -1,5 +1,4 @@
 import * as Print from 'expo-print';
-import * as Sharing from 'expo-sharing';
 
 import { BillDetail } from '@/services/bills/billsService';
 import { escapeHtml } from '@/utils/escapeHtml';
@@ -159,28 +158,25 @@ function buildBillHtml({ bill, residentName }: BillPdfInput): string {
 </html>`;
 }
 
-// Renders the bill to a PDF on-device (no server round trip — see §2.4.6) and opens the
-// native share sheet, sharing directly from the cache URI printToFileAsync returns.
-// Deliberately does NOT touch expo-file-system at all: an earlier version renamed/copied the
-// file via expo-file-system's `File` API for a nicer filename, but on a physical Android
-// device in Expo Go that throws "Missing 'READ' permission for accessing the file" —
-// expo-file-system's own permission layer doesn't recognize a path expo-print wrote via its
-// native code outside of it. Sharing.shareAsync's `dialogTitle` gives the share sheet a
-// readable name instead, without needing filesystem access to rename anything.
+// Renders the bill to a PDF on-device (no server round trip — see §2.4.6) via the native
+// print dialog (Print.printAsync), NOT printToFileAsync + Sharing.shareAsync. Two earlier
+// versions of this function tried to hand off expo-print's output file — first renamed via
+// expo-file-system's `File` API, then shared directly via its raw cache URI — and BOTH failed
+// on a physical Android device in Expo Go with a permission error ("Missing 'READ'
+// permission…" / "Not allowed to read file under given URL."). Both expo-file-system's
+// next-gen API and expo-sharing gate file reads through the exact same
+// `FilePermissionService` (confirmed by reading both modules' Android source), which in Expo
+// Go recognizes only its own "experience-isolated" directories — never a file expo-print
+// wrote via its own native code outside of that. `Print.printAsync({ html })` sidesteps this
+// whole class of bug: it renders straight into Android's native PrintManager (confirmed via
+// expo-print's own Android source), with no intermediate cache file for JS code to touch at
+// all. The OS print dialog's own "Save as PDF" target is how the resident gets a PDF out of
+// it, and most Android print previews also expose a native share icon — Expo Go compatible
+// either way, since neither path goes through expo-file-system or expo-sharing.
 export async function generateAndShareBillPdf(input: BillPdfInput): Promise<void> {
   try {
     const html = buildBillHtml(input);
-    const { uri } = await Print.printToFileAsync({ html, base64: false });
-
-    const filename = `Bill_${input.bill.referenceNumber}.pdf`;
-    const canShare = await Sharing.isAvailableAsync();
-    if (canShare) {
-      await Sharing.shareAsync(uri, {
-        mimeType: 'application/pdf',
-        dialogTitle: filename,
-        UTI: 'com.adobe.pdf',
-      });
-    }
+    await Print.printAsync({ html });
   } catch (err) {
     console.error(
       '[generateAndShareBillPdf] failed:',

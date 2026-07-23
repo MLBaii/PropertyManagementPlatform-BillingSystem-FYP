@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { ChangePasswordModal } from '@/components/profile/ChangePasswordModal';
 import { NotificationPreferencesModal } from '@/components/profile/NotificationPreferencesModal';
@@ -12,7 +12,8 @@ import { SettingsLinkRow } from '@/components/ui/SettingsLinkRow';
 import { TextField } from '@/components/ui/TextField';
 import { useAuth } from '@/services/auth/AuthContext';
 import { getProfile, NotificationPreferences, Profile, updateProfile } from '@/services/profile/profileService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 function isValidEmail(email: string): boolean {
@@ -20,6 +21,8 @@ function isValidEmail(email: string): boolean {
 }
 
 export default function ProfileScreen() {
+  const { colors, themeName, toggleTheme } = useTheme();
+  const styles = createStyles(colors);
   const { logout } = useAuth();
 
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -205,6 +208,19 @@ export default function ProfileScreen() {
           </View>
         </Card>
 
+        <Text style={styles.eyebrowTight}>Appearance</Text>
+        <Card style={styles.unitCard}>
+          <View style={[styles.lineItem, styles.lineItemLast]}>
+            <Text style={styles.lineLabel}>Dark Mode</Text>
+            <Switch
+              value={themeName === 'dark'}
+              onValueChange={toggleTheme}
+              trackColor={{ false: colors.border, true: colors.accentLine }}
+              thumbColor={themeName === 'dark' ? colors.accent : colors.textSecondary}
+            />
+          </View>
+        </Card>
+
         <Card style={styles.settingsCard}>
           <SettingsLinkRow label="Notification Preferences" onPress={() => setIsNotificationsModalVisible(true)} />
           <SettingsLinkRow label="Change Password" onPress={() => setIsPasswordModalVisible(true)} />
@@ -223,114 +239,115 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  centered: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadError: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  scrollContent: {
-    paddingTop: 10,
-    paddingBottom: 32,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 22,
-    marginTop: 10,
-  },
-  name: {
-    fontFamily: fonts.heading,
-    fontSize: 20,
-    color: colors.text,
-    marginTop: 12,
-  },
-  unitLine: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.textSecondary,
-    marginTop: 3,
-  },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  eyebrow: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-  },
-  eyebrowTight: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-    marginBottom: 6,
-  },
-  editLink: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 13,
-    color: colors.accent,
-  },
-  success: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 13,
-    color: colors.success,
-    marginBottom: 12,
-  },
-  fieldStack: {
-    marginBottom: 20,
-  },
-  editActions: {
-    marginTop: -6,
-    marginBottom: 20,
-    gap: 14,
-  },
-  cancelLink: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  unitCard: {
-    marginBottom: 20,
-  },
-  settingsCard: {
-    paddingHorizontal: 16,
-    paddingVertical: 0,
-  },
-  lineItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 11,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  lineItemLast: {
-    borderBottomWidth: 0,
-  },
-  lineLabel: {
-    fontFamily: fonts.body,
-    fontSize: 13.5,
-    color: colors.textSecondary,
-  },
-  lineValue: {
-    fontFamily: fonts.body,
-    fontSize: 13.5,
-    color: colors.text,
-  },
-  lineValueBody: {
-    fontFamily: fonts.body,
-    fontSize: 13.5,
-    color: colors.text,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    centered: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    loadError: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    scrollContent: {
+      paddingTop: 10,
+      paddingBottom: 32,
+    },
+    header: {
+      alignItems: 'center',
+      marginBottom: 22,
+      marginTop: 10,
+    },
+    name: {
+      fontFamily: fonts.heading,
+      fontSize: 20,
+      color: colors.text,
+      marginTop: 12,
+    },
+    unitLine: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.textSecondary,
+      marginTop: 3,
+    },
+    sectionHeaderRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 10,
+    },
+    eyebrow: {
+      fontFamily: fonts.body,
+      fontSize: 10,
+      letterSpacing: 1.5,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+    },
+    eyebrowTight: {
+      fontFamily: fonts.body,
+      fontSize: 10,
+      letterSpacing: 1.5,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+      marginBottom: 6,
+    },
+    editLink: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: colors.accent,
+    },
+    success: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: colors.success,
+      marginBottom: 12,
+    },
+    fieldStack: {
+      marginBottom: 20,
+    },
+    editActions: {
+      marginTop: -6,
+      marginBottom: 20,
+      gap: 14,
+    },
+    cancelLink: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    unitCard: {
+      marginBottom: 20,
+    },
+    settingsCard: {
+      paddingHorizontal: 16,
+      paddingVertical: 0,
+    },
+    lineItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 11,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    lineItemLast: {
+      borderBottomWidth: 0,
+    },
+    lineLabel: {
+      fontFamily: fonts.body,
+      fontSize: 13.5,
+      color: colors.textSecondary,
+    },
+    lineValue: {
+      fontFamily: fonts.body,
+      fontSize: 13.5,
+      color: colors.text,
+    },
+    lineValueBody: {
+      fontFamily: fonts.body,
+      fontSize: 13.5,
+      color: colors.text,
+    },
+  });

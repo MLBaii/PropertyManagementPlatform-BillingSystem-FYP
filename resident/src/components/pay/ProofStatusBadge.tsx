@@ -2,21 +2,23 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { ProofStatus } from '@/services/paymentProofs/paymentProofService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 type Props = {
   status: ProofStatus;
 };
 
-const STATUS_CONFIG: Record<ProofStatus, { label: string; color: string; bg: string }> = {
+const getStatusConfig = (colors: ThemeColors): Record<ProofStatus, { label: string; color: string; bg: string }> => ({
   Pending: { label: 'Pending', color: colors.pending, bg: colors.pendingBg },
   Approved: { label: 'Approved', color: colors.success, bg: colors.successBg },
   Rejected: { label: 'Rejected', color: colors.danger, bg: colors.dangerBg },
-};
+});
 
 export function ProofStatusBadge({ status }: Props) {
-  const config = STATUS_CONFIG[status];
+  const { colors } = useTheme();
+  const config = getStatusConfig(colors)[status];
 
   return (
     <View style={[styles.badge, { backgroundColor: config.bg }]}>

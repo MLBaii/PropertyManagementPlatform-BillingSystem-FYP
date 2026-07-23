@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 type Props = {
@@ -10,6 +11,8 @@ type Props = {
 };
 
 export function Avatar({ name, size = 64 }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const initial = name.trim().charAt(0).toUpperCase() || '?';
 
   return (
@@ -19,16 +22,17 @@ export function Avatar({ name, size = 64 }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  avatar: {
-    backgroundColor: colors.accentSoft,
-    borderWidth: 1,
-    borderColor: colors.accentLine,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  initial: {
-    fontFamily: fonts.heading,
-    color: colors.accent,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    avatar: {
+      backgroundColor: colors.accentSoft,
+      borderWidth: 1,
+      borderColor: colors.accentLine,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    initial: {
+      fontFamily: fonts.heading,
+      color: colors.accent,
+    },
+  });

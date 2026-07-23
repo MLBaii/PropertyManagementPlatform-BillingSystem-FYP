@@ -2,7 +2,8 @@ import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 type Props = {
@@ -13,6 +14,9 @@ type Props = {
 };
 
 export function ModalSheet({ visible, title, onClose, children }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
@@ -30,29 +34,30 @@ export function ModalSheet({ visible, title, onClose, children }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(10, 9, 8, 0.7)',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  sheet: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 20,
-    padding: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 18,
-  },
-  title: {
-    fontFamily: fonts.heading,
-    fontSize: 18,
-    color: colors.text,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    backdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(10, 9, 8, 0.7)',
+      justifyContent: 'center',
+      padding: 20,
+    },
+    sheet: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 20,
+      padding: 20,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 18,
+    },
+    title: {
+      fontFamily: fonts.heading,
+      fontSize: 18,
+      color: colors.text,
+    },
+  });

@@ -9,10 +9,13 @@ import { Card } from '@/components/ui/Card';
 import { Screen } from '@/components/ui/Screen';
 import { useAuth } from '@/services/auth/AuthContext';
 import { Dashboard, getDashboard } from '@/services/dashboard/dashboardService';
-import { colors } from '@/theme/colors';
+import { ThemeColors } from '@/theme/colors';
+import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
 export default function HomeScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const { resident } = useAuth();
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -116,67 +119,68 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  centered: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadError: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  scrollContent: {
-    paddingTop: 10,
-    paddingBottom: 32,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 18,
-  },
-  eyebrow: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    color: colors.textSecondary,
-  },
-  title: {
-    fontFamily: fonts.heading,
-    fontSize: 26,
-    letterSpacing: -0.52,
-    color: colors.text,
-    marginTop: 2,
-  },
-  grid: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 12,
-    marginBottom: 22,
-  },
-  activityHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  link: {
-    fontFamily: fonts.bodyMedium,
-    fontSize: 12,
-    color: colors.accent,
-  },
-  activityCard: {
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-  },
-  emptyText: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    paddingVertical: 24,
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    centered: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    loadError: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    scrollContent: {
+      paddingTop: 10,
+      paddingBottom: 32,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 18,
+    },
+    eyebrow: {
+      fontFamily: fonts.body,
+      fontSize: 10,
+      letterSpacing: 1.5,
+      textTransform: 'uppercase',
+      color: colors.textSecondary,
+    },
+    title: {
+      fontFamily: fonts.heading,
+      fontSize: 26,
+      letterSpacing: -0.52,
+      color: colors.text,
+      marginTop: 2,
+    },
+    grid: {
+      flexDirection: 'row',
+      gap: 12,
+      marginTop: 12,
+      marginBottom: 22,
+    },
+    activityHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 10,
+    },
+    link: {
+      fontFamily: fonts.bodyMedium,
+      fontSize: 12,
+      color: colors.accent,
+    },
+    activityCard: {
+      paddingHorizontal: 16,
+      paddingVertical: 4,
+    },
+    emptyText: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      paddingVertical: 24,
+    },
+  });
