@@ -10,6 +10,8 @@ bin/
 obj/
 *.user
 backend/appsettings.Development.json
+admin/node_modules/
+admin/.angular/
 
 # Env / secrets
 .env
