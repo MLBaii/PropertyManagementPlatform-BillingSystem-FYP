@@ -46,6 +46,7 @@ public class BillService : IBillService
             TotalAmount = bill.TotalAmount,
             OutstandingBalance = bill.OutstandingBalance,
             Status = ComputeEffectiveStatus(bill),
+            ActiveDisputeStatus = ComputeActiveDisputeStatus(bill),
             DaysUntilDue = ComputeDaysUntilDue(bill),
             LineItems = bill.BillLineItems
                 .Select(li => new BillLineItemDto
@@ -73,30 +74,19 @@ public class BillService : IBillService
             TotalAmount = bill.TotalAmount,
             OutstandingBalance = bill.OutstandingBalance,
             Status = ComputeEffectiveStatus(bill),
+            ActiveDisputeStatus = ComputeActiveDisputeStatus(bill),
             DaysUntilDue = ComputeDaysUntilDue(bill),
         };
     }
 
     // "Overdue" isn't a value anyone writes to Bill.Status — it's derived from the due date,
     // since nothing in this project runs a scheduled job to flip a stored status over.
-    // A dispute's own status drives a two-stage override that takes priority over every
-    // other computed status (including Paid — a resident can dispute a bill they've already
-    // paid): "Open" (not yet looked at) shows "Disputed", "UnderReview" (admin has seen it)
-    // shows "PendingDispute". Once it's "Resolved" (or "Rejected"), neither check matches and
-    // the bill falls through to its normal computed status below — re-evaluated fresh on
-    // every call, so no separate bookkeeping is needed to "revert" it.
+    // Purely payment-side: never folds in dispute state (a resident can dispute a bill
+    // regardless of its payment status, including one they've already paid) — dispute state
+    // is surfaced separately via ComputeActiveDisputeStatus so the resident always sees the
+    // real payment status, not one masked by an in-progress dispute.
     private static string ComputeEffectiveStatus(Bill bill)
     {
-        if (bill.Disputes.Any(d => d.Status == "Open"))
-        {
-            return "Disputed";
-        }
-
-        if (bill.Disputes.Any(d => d.Status == "UnderReview"))
-        {
-            return "PendingDispute";
-        }
-
         if (string.Equals(bill.Status, "Paid", StringComparison.OrdinalIgnoreCase))
         {
             return "Paid";
@@ -108,6 +98,26 @@ public class BillService : IBillService
         }
 
         return bill.DueDate.Date < DateTime.UtcNow.Date ? "Overdue" : "Unpaid";
+    }
+
+    // Null unless the bill has a dispute that's still active: "Open" (not yet looked at) ->
+    // "Disputed", "UnderReview" (admin has seen it) -> "PendingDispute". A "Resolved" or
+    // "Rejected" dispute matches neither check, so this returns null and only the payment
+    // badge shows — re-evaluated fresh on every call, so no separate bookkeeping is needed
+    // to "revert" it once a dispute is closed out.
+    private static string? ComputeActiveDisputeStatus(Bill bill)
+    {
+        if (bill.Disputes.Any(d => d.Status == "Open"))
+        {
+            return "Disputed";
+        }
+
+        if (bill.Disputes.Any(d => d.Status == "UnderReview"))
+        {
+            return "PendingDispute";
+        }
+
+        return null;
     }
 
     private static int ComputeDaysUntilDue(Bill bill)

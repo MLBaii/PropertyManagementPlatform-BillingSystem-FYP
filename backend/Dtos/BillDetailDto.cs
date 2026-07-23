@@ -9,7 +9,12 @@ public class BillDetailDto
     public DateTime DueDate { get; set; }
     public decimal TotalAmount { get; set; }
     public decimal OutstandingBalance { get; set; }
+    // Purely payment-side — see BillDto.Status.
     public string Status { get; set; } = string.Empty;
+
+    // See BillDto.ActiveDisputeStatus — same "second badge" semantics.
+    public string? ActiveDisputeStatus { get; set; }
+
     public int DaysUntilDue { get; set; }
     public List<BillLineItemDto> LineItems { get; set; } = new();
 

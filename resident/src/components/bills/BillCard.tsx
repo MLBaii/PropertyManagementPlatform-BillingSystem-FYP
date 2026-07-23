@@ -24,7 +24,10 @@ export function BillCard({ bill, onPress }: Props) {
       <Card style={styles.card}>
         <View style={styles.topRow}>
           <Text style={styles.reference}>{bill.referenceNumber}</Text>
-          <StatusBadge status={bill.status} />
+          <View style={styles.badgeRow}>
+            <StatusBadge status={bill.status} />
+            {bill.activeDisputeStatus && <StatusBadge status={bill.activeDisputeStatus} />}
+          </View>
         </View>
         <View style={styles.bottomRow}>
           <View>
@@ -52,6 +55,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 8,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   reference: {
     fontFamily: fonts.mono,

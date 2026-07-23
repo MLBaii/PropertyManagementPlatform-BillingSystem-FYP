@@ -1,6 +1,9 @@
 import { colors } from '@/theme/colors';
 import { Bill } from '@/services/bills/billsService';
 
+// Purely payment-side, like Bill['status'] itself — dispute state is a separate badge
+// (see BillCard/[billId].tsx rendering ActiveDisputeStatus alongside this), never folded
+// into the countdown row.
 export function getCountdownColor(status: Bill['status']): string {
   switch (status) {
     case 'Paid':
@@ -9,29 +12,18 @@ export function getCountdownColor(status: Bill['status']): string {
       return colors.danger;
     case 'ProofSubmitted':
       return colors.pending;
-    case 'Disputed':
-      return colors.disputed;
-    case 'PendingDispute':
-      return colors.pendingDispute;
     default:
       return colors.unpaid;
   }
 }
 
-// Primary countdown line: "Settled" / "Pending review" / "Disputed" / "Pending Dispute" /
-// "N days overdue" / "N days left" / "Due today".
+// Primary countdown line: "Settled" / "Pending review" / "N days overdue" / "N days left" / "Due today".
 export function getCountdownLabel(bill: Pick<Bill, 'status' | 'daysUntilDue'>): string {
   if (bill.status === 'Paid') {
     return 'Settled';
   }
   if (bill.status === 'ProofSubmitted') {
     return 'Pending review';
-  }
-  if (bill.status === 'Disputed') {
-    return 'Disputed';
-  }
-  if (bill.status === 'PendingDispute') {
-    return 'Pending Dispute';
   }
   if (bill.status === 'Overdue') {
     return `${Math.abs(bill.daysUntilDue)} days overdue`;

@@ -97,7 +97,10 @@ export default function BillDetailScreen() {
             <Feather name="chevron-left" size={16} color={colors.accent} />
             <Text style={styles.backText}>Bills</Text>
           </Pressable>
-          <StatusBadge status={bill.status} />
+          <View style={styles.badgeRow}>
+            <StatusBadge status={bill.status} />
+            {bill.activeDisputeStatus && <StatusBadge status={bill.activeDisputeStatus} />}
+          </View>
         </View>
 
         <Text style={styles.eyebrow}>{bill.referenceNumber}</Text>
@@ -174,6 +177,11 @@ const styles = StyleSheet.create({
   backRow: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   backText: {
     fontFamily: fonts.bodyMedium,

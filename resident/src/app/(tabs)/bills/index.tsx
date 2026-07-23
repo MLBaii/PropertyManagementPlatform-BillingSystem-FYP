@@ -40,9 +40,15 @@ export default function BillsListScreen() {
     }, [])
   );
 
+  // "Disputed"/"PendingDispute" aren't values of bill.status anymore (that's purely payment
+  // status) — they live on the separate activeDisputeStatus field, so those two pills match
+  // against that instead, regardless of the bill's underlying payment status.
   const filteredBills = useMemo(() => {
     if (filter === 'All') {
       return bills;
+    }
+    if (filter === 'Disputed' || filter === 'PendingDispute') {
+      return bills.filter((bill) => bill.activeDisputeStatus === filter);
     }
     return bills.filter((bill) => bill.status === filter);
   }, [bills, filter]);
