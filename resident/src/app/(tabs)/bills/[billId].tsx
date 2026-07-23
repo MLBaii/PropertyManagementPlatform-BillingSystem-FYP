@@ -127,9 +127,15 @@ export default function BillDetailScreen() {
               </View>
             );
           })}
-          <View style={[styles.lineItem, styles.totalRow]}>
-            <Text style={styles.totalLabel}>Total Due</Text>
-            <Text style={styles.totalAmount}>RM {bill.outstandingBalance.toFixed(2)}</Text>
+          <View style={styles.totalsBlock}>
+            <View style={styles.totalDueRow}>
+              <Text style={styles.totalDueLabel}>Total Due</Text>
+              <Text style={styles.totalDueValue}>RM {bill.outstandingBalance.toFixed(2)}</Text>
+            </View>
+            <View style={styles.totalAmountRow}>
+              <Text style={styles.totalAmountLabel}>Total Amount</Text>
+              <Text style={styles.totalAmountValue}>RM {bill.totalAmount.toFixed(2)}</Text>
+            </View>
           </View>
         </Card>
 
@@ -235,18 +241,41 @@ const createStyles = (colors: ThemeColors) =>
     penaltyText: {
       color: colors.danger,
     },
-    totalRow: {
+    // "Total Due" (small, muted) sits above "Total Amount" (large, prominent) rather than
+    // one combined row — a bill's outstanding balance and its full charged amount can differ
+    // (e.g. RM 0.00 due on a Paid bill whose line items still sum to RM 350.00), and showing
+    // only "Total Due" made a paid bill look like it never charged anything.
+    totalsBlock: {
       paddingTop: 13,
-      borderBottomWidth: 0,
     },
-    totalLabel: {
+    totalDueRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 6,
+    },
+    totalDueLabel: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.textSecondary,
+    },
+    totalDueValue: {
+      fontFamily: fonts.mono,
+      fontSize: 11,
+      color: colors.textSecondary,
+    },
+    totalAmountRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    totalAmountLabel: {
       fontFamily: fonts.bodySemiBold,
       fontSize: 14,
       color: colors.text,
     },
-    totalAmount: {
+    totalAmountValue: {
       fontFamily: fonts.monoMedium,
-      fontSize: 16,
+      fontSize: 20,
       color: colors.accent,
     },
     actions: {
