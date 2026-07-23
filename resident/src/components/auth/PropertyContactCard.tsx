@@ -2,41 +2,34 @@ import { Feather } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
-import { ModalSheet } from '@/components/ui/ModalSheet';
 import { getPropertyContact, PropertyContact } from '@/services/property/propertyService';
 import { ThemeColors } from '@/theme/colors';
 import { useTheme } from '@/theme/ThemeContext';
 import { fonts } from '@/theme/typography';
 
-type Props = {
-  visible: boolean;
-  onClose: () => void;
-};
-
-export function ForgotPasswordModal({ visible, onClose }: Props) {
+// The fallback path for a resident who can't complete the email-based reset (UC-101 A1) —
+// e.g. no access to their registered inbox. Self-contained (fetches on mount) so it can be
+// dropped into any pre-login screen as a secondary section.
+export function PropertyContactCard() {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [contact, setContact] = useState<PropertyContact | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
   useEffect(() => {
-    if (!visible) {
-      return;
-    }
-    setIsLoading(true);
-    setErrorMessage(undefined);
     getPropertyContact()
       .then(setContact)
       .catch(() => setErrorMessage('Could not load contact details. Please try again.'))
       .finally(() => setIsLoading(false));
-  }, [visible]);
+  }, []);
 
   return (
-    <ModalSheet visible={visible} title="Forgot Password?" onClose={onClose}>
+    <View style={styles.wrap}>
+      <Text style={styles.heading}>Need help? Contact your property manager</Text>
       <Text style={styles.body}>
-        Password resets are handled by your property manager. Please contact them to reset
-        your account.
+        Password resets are also handled by your property manager if you'd rather not wait
+        for the email.
       </Text>
 
       {isLoading ? (
@@ -56,18 +49,27 @@ export function ForgotPasswordModal({ visible, onClose }: Props) {
           </View>
         </View>
       ) : null}
-    </ModalSheet>
+    </View>
   );
 }
 
 const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
+    wrap: {
+      marginTop: 8,
+    },
+    heading: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 13,
+      color: colors.text,
+      marginBottom: 6,
+    },
     body: {
       fontFamily: fonts.body,
-      fontSize: 14,
-      lineHeight: 20,
-      color: colors.text,
-      marginBottom: 16,
+      fontSize: 12,
+      lineHeight: 17,
+      color: colors.textSecondary,
+      marginBottom: 12,
     },
     loading: {
       marginTop: 4,

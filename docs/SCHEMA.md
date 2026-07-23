@@ -23,6 +23,12 @@ UC-110 (view dispute history) — Figure 4.13's own mockup caption says the disp
 "the dispute status and admin response," but the ERD's `Dispute` table has no column for one
 (unlike `PaymentProof`, which already has `AdminRemarks`). Same disclosure category as above.
 
+`PasswordResetToken` (whole table: `PasswordResetTokenId`, `ResidentId` FK, `TokenHash`, `ExpiresAt`,
+`UsedAt` nullable, `CreatedAt`) is **not** in the Chapter 4 ERD. Added to support UC-101 A1
+(email-based password reset) — the ERD has no mechanism at all for issuing/tracking a reset
+token. Only the SHA-256 hash of the token is ever persisted, never the raw value. Same
+disclosure category as above.
+
 ## Key relationships
 - Property 1—* Unit
 - Property 1—* BillingItem
@@ -211,3 +217,14 @@ the relevant Payment(s) during review.
 | AffectedEntityId | int | nullable — PK of the affected record |
 | Description | text | nullable |
 | Timestamp | timestamptz | |
+
+### PasswordResetToken
+**Not in the ERD** — see "Deliberate additions" above.
+| Column | Type | Notes |
+|---|---|---|
+| PasswordResetTokenId | int | PK |
+| ResidentId | int | FK → Resident, cascade delete |
+| TokenHash | text | SHA-256 hex digest of the emailed token; unique index; raw token never persisted |
+| ExpiresAt | timestamptz | 30 minutes from creation |
+| UsedAt | timestamptz | nullable |
+| CreatedAt | timestamptz | |

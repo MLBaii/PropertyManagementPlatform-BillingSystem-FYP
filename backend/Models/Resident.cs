@@ -22,4 +22,5 @@ public class Resident
     public ICollection<Dispute> Disputes { get; set; } = new List<Dispute>();
     public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
     public ICollection<NotificationToken> NotificationTokens { get; set; } = new List<NotificationToken>();
+    public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
 }

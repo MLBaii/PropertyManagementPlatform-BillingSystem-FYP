@@ -22,6 +22,7 @@ public class AppDbContext : DbContext
     public DbSet<UnitBillingRate> UnitBillingRates => Set<UnitBillingRate>();
     public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -93,6 +94,12 @@ public class AppDbContext : DbContext
             .HasForeignKey(nt => nt.ResidentId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<Resident>()
+            .HasMany(r => r.PasswordResetTokens)
+            .WithOne(prt => prt.Resident)
+            .HasForeignKey(prt => prt.ResidentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<Bill>()
             .HasMany(b => b.BillLineItems)
             .WithOne(bli => bli.Bill)
@@ -157,6 +164,10 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<AdminUser>()
             .HasIndex(au => au.Username)
+            .IsUnique();
+
+        modelBuilder.Entity<PasswordResetToken>()
+            .HasIndex(prt => prt.TokenHash)
             .IsUnique();
     }
 }

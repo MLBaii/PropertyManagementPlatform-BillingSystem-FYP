@@ -21,6 +21,44 @@
 
 ## JSON shapes
 
+### Password Reset (UC-101 A1) — implemented
+
+Both endpoints are unauthenticated (fired before a resident has a session) and rate-limited per client IP
+(`AddRateLimiter` in `Program.cs`): `forgot-password` allows 3 requests / 15 min, `reset-password` allows 10 /
+15 min. `PasswordResetService` additionally throttles `forgot-password` per-resident to one email a minute
+regardless of which IP the requests come from. Email delivery is SMTP via MailKit (`EmailService`, `Smtp`
+config section — see `appsettings.json`/`appsettings.Development.json`), currently configured against Gmail.
+
+#### `POST /api/auth/resident/forgot-password`
+Request:
+```json
+{ "email": "alice.tan@example.com" }
+```
+If `email` matches an active resident, a cryptographically random 32-byte token is generated, its SHA-256
+hash (not the raw token) stored in `PasswordResetToken` with a 30-minute expiry, and the raw token emailed to
+the resident. Always responds `200` with the same generic message **regardless of whether the email matched a
+resident** — deliberately not distinguished, to prevent account enumeration:
+```json
+{ "message": "A password reset link has been sent to your email. Please check your inbox." }
+```
+A delivery failure (SMTP error) is logged server-side but never surfaced to the caller, for the same reason.
+
+#### `POST /api/auth/resident/reset-password`
+Request:
+```json
+{ "token": "41nIo5jWva_vcdThSk2l08wd4ky1RnBfeBBRF5INsWA", "newPassword": "NewPass1234" }
+```
+`newPassword` must be at least 8 characters (`[MinLength(8)]`, matching the documented validation message).
+Response `200` on success — the token is marked used and every other outstanding token for that resident is
+invalidated in the same request, so an earlier reset email can't still be redeemed afterward:
+```json
+{ "message": "Your password has been reset successfully. Please log in with your new password." }
+```
+`400` if the token doesn't exist, is expired, or was already used:
+```json
+{ "message": "This reset code is invalid or has expired. Please request a new one." }
+```
+
 ### Profile (UC-102) — implemented
 
 All four endpoints are `[Authorize]`, scoped to the JWT's `ResidentId` claim.
