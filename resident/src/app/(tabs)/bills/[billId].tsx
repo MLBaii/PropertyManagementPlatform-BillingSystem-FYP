@@ -80,6 +80,14 @@ export default function BillDetailScreen() {
   const countdownLabel = getCountdownLabel(bill);
   const showDueDate = shouldShowDueDateLine(bill.status);
 
+  // Action visibility keys off the same effective/computed status as the badge above, not
+  // activeDisputeStatus — a bill can be both Overdue and Disputed, and that combination still
+  // shows all three actions. Cancelled takes priority over everything else (checked separately
+  // below), since a voided bill has nothing left to pay, dispute, or download a live PDF for.
+  const canUploadProof = bill.status === 'Unpaid' || bill.status === 'Overdue';
+  const canDispute = bill.status === 'Unpaid' || bill.status === 'Overdue' || bill.status === 'ProofSubmitted';
+  const isCancelled = bill.status === 'Cancelled';
+
   const handleDownloadPdf = async () => {
     setPdfError(undefined);
     setIsGeneratingPdf(true);
@@ -140,22 +148,32 @@ export default function BillDetailScreen() {
         </Card>
 
         <View style={styles.actions}>
-          <PrimaryButton
-            label="Upload Payment Proof"
-            onPress={() =>
-              router.push({ pathname: '/(tabs)/pay/upload', params: { billId: String(bill.billId) } })
-            }
-          />
-          <GhostButton label="Download PDF" onPress={handleDownloadPdf} loading={isGeneratingPdf} />
-          {pdfError && <Text style={styles.pdfError}>{pdfError}</Text>}
-          <Text
-            style={styles.disputeLink}
-            onPress={() =>
-              router.push({ pathname: '/(tabs)/bills/dispute', params: { billId: String(bill.billId) } })
-            }
-          >
-            Dispute This Bill
-          </Text>
+          {isCancelled ? (
+            <GhostButton label="Close" onPress={() => router.back()} />
+          ) : (
+            <>
+              {canUploadProof && (
+                <PrimaryButton
+                  label="Upload Payment Proof"
+                  onPress={() =>
+                    router.push({ pathname: '/(tabs)/pay/upload', params: { billId: String(bill.billId) } })
+                  }
+                />
+              )}
+              <GhostButton label="Download PDF" onPress={handleDownloadPdf} loading={isGeneratingPdf} />
+              {pdfError && <Text style={styles.pdfError}>{pdfError}</Text>}
+              {canDispute && (
+                <Text
+                  style={styles.disputeLink}
+                  onPress={() =>
+                    router.push({ pathname: '/(tabs)/bills/dispute', params: { billId: String(bill.billId) } })
+                  }
+                >
+                  Dispute This Bill
+                </Text>
+              )}
+            </>
+          )}
         </View>
       </ScrollView>
     </Screen>
