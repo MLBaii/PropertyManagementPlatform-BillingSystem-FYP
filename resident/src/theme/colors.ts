@@ -24,6 +24,8 @@ export const darkColors = {
   disputedBg: 'rgba(176, 143, 217, 0.12)',
   pendingDispute: '#9C8FB0',
   pendingDisputeBg: 'rgba(156, 143, 176, 0.12)',
+  cancelled: '#9C9488',
+  cancelledBg: 'rgba(156, 148, 136, 0.12)',
   surface2: '#2B2520',
 } as const;
 
@@ -49,6 +51,8 @@ export const lightColors = {
   disputedBg: 'rgba(136, 98, 176, 0.10)',
   pendingDispute: '#756A87',
   pendingDisputeBg: 'rgba(117, 106, 135, 0.10)',
+  cancelled: '#7A7266',
+  cancelledBg: 'rgba(122, 114, 102, 0.10)',
   surface2: '#F1ECE3',
 } as const;
 

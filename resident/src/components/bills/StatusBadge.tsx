@@ -15,6 +15,7 @@ const getStatusConfig = (colors: ThemeColors): Record<BillStatus, { label: strin
   Unpaid: { label: 'Unpaid', color: colors.unpaid, bg: colors.unpaidBg },
   Overdue: { label: 'Overdue', color: colors.danger, bg: colors.dangerBg },
   ProofSubmitted: { label: 'Proof Submitted', color: colors.pending, bg: colors.pendingBg },
+  Cancelled: { label: 'Cancelled', color: colors.cancelled, bg: colors.cancelledBg },
   Disputed: { label: 'Disputed', color: colors.disputed, bg: colors.disputedBg },
   PendingDispute: { label: 'Pending Dispute', color: colors.pendingDispute, bg: colors.pendingDisputeBg },
 });

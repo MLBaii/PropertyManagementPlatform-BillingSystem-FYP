@@ -59,7 +59,10 @@ public class DashboardService : IDashboardService
         {
             UnitNumber = resident.Unit.UnitNumber,
             PropertyName = resident.Unit.Property.Name,
-            TotalOutstanding = bills.Sum(b => b.OutstandingBalance),
+            // Excludes Voided bills explicitly rather than relying on AdminBillsController.Void
+            // having already zeroed OutstandingBalance — a cancelled bill should never count
+            // toward what the resident owes, regardless of what the admin side happens to store.
+            TotalOutstanding = bills.Where(b => b.Status != "Voided").Sum(b => b.OutstandingBalance),
             TotalPaid = payments.Sum(p => p.Amount),
             CreditBalance = resident.Account.CreditBalance,
             RecentActivity = recentActivity,

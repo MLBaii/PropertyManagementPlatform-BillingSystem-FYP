@@ -114,12 +114,14 @@ Both endpoints are `[Authorize]`, scoped to the JWT's `UnitId` claim.
 `status` in the response is **computed**, not the raw stored value — see `BillService.ComputeEffectiveStatus`.
 Nothing in this project runs a scheduled job to flip a bill from unpaid to overdue, so "Overdue" is derived
 from `dueDate` vs. the current date every time the endpoint is called, rather than being a value anyone writes.
-Raw `Bill.Status` in the database holds `"Unpaid"`, `"Paid"`, or (since UC-106) `"ProofSubmitted"` — the last
-one set directly by `PaymentProofRepository.CreateAsync` when a resident tags a bill to an uploaded proof,
-rather than derived like "Overdue" is.
+Raw `Bill.Status` in the database holds `"Unpaid"`, `"Paid"`, `"Voided"` (written by the admin module's
+`AdminBillsController.Void`, surfaced to residents as `"Cancelled"` rather than the internal admin term), or
+(since UC-106) `"ProofSubmitted"` — the last one set directly by `PaymentProofRepository.CreateAsync` when a
+resident tags a bill to an uploaded proof, rather than derived like "Overdue" is. A cancelled bill's
+`outstandingBalance` is forced to `0` and excluded from the Dashboard's `totalOutstanding` (UC-104).
 
 #### `GET /api/residents/bills?status={status}`
-`status` query param is optional, case-insensitive, one of `Unpaid` | `Overdue` | `Paid` | `ProofSubmitted`
+`status` query param is optional, case-insensitive, one of `Unpaid` | `Overdue` | `Paid` | `ProofSubmitted` | `Cancelled`
 — filters the list to bills whose *computed* status matches. Response `200`:
 ```json
 [

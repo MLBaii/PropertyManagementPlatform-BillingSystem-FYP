@@ -97,6 +97,15 @@ public class BillService : IBillService
             return "ProofSubmitted";
         }
 
+        // "Voided" is written by the admin module (AdminBillsController.Void) when a bill is
+        // cancelled — checked before the due-date fallback below, otherwise a cancelled bill
+        // would read as "Overdue"/"Unpaid" to the resident and look like money still owed.
+        // Surfaced to the resident as "Cancelled", the admin term is an internal detail.
+        if (string.Equals(bill.Status, "Voided", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Cancelled";
+        }
+
         return bill.DueDate.Date < DateTime.UtcNow.Date ? "Overdue" : "Unpaid";
     }
 

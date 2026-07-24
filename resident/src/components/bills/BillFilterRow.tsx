@@ -12,7 +12,8 @@ export type BillFilter =
   | 'ProofSubmitted'
   | 'Disputed'
   | 'PendingDispute'
-  | 'Paid';
+  | 'Paid'
+  | 'Cancelled';
 
 const FILTERS: BillFilter[] = [
   'All',
@@ -22,6 +23,7 @@ const FILTERS: BillFilter[] = [
   'Disputed',
   'PendingDispute',
   'Paid',
+  'Cancelled',
 ];
 
 export const FILTER_LABELS: Record<BillFilter, string> = {
@@ -32,6 +34,7 @@ export const FILTER_LABELS: Record<BillFilter, string> = {
   Disputed: 'Disputed',
   PendingDispute: 'Pending Dispute',
   Paid: 'Paid',
+  Cancelled: 'Cancelled',
 };
 
 type Props = {

@@ -1,7 +1,9 @@
 import { apiClient } from '@/services/api/client';
 
 // Purely payment-side — never folds in dispute state. See DisputeStatus for that.
-export type PaymentStatus = 'Unpaid' | 'Overdue' | 'Paid' | 'ProofSubmitted';
+// "Cancelled" reflects a bill the admin module voided (AdminBillsController.Void writes
+// Bill.Status = "Voided"; BillService.ComputeEffectiveStatus surfaces it under this name).
+export type PaymentStatus = 'Unpaid' | 'Overdue' | 'Paid' | 'ProofSubmitted' | 'Cancelled';
 
 // Only set while a dispute on the bill is still active (Open/UnderReview) — a second,
 // independent badge alongside PaymentStatus, not a replacement for it.
