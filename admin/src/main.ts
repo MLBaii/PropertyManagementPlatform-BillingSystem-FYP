@@ -5,6 +5,7 @@ import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuditLogComponent } from './audit-log.component';
 import { BillGenerationComponent } from './bill-generation.component';
+import { BillingConfigurationComponent } from './billing-configuration.component';
 import { DashboardComponent } from './dashboard.component';
 import { PaymentsComponent } from './payments.component';
 import { PropertiesComponent } from './properties.component';
@@ -20,7 +21,7 @@ type Page = 'Dashboard' | 'Properties & Units' | 'Billing configuration' | 'Bill
 
 @Component({
   selector: 'app-root', standalone: true,
-  imports: [ReactiveFormsModule, DecimalPipe, DatePipe, DashboardComponent, ReportsComponent, RemindersComponent, AuditLogComponent, BillGenerationComponent, PaymentsComponent, PropertiesComponent],
+  imports: [ReactiveFormsModule, DecimalPipe, DatePipe, DashboardComponent, ReportsComponent, RemindersComponent, AuditLogComponent, BillGenerationComponent, PaymentsComponent, PropertiesComponent, BillingConfigurationComponent],
   template: `
     @if (!s) {
       <main class="login"><section><b>Property<span>Bill</span></b><small>ADMIN PORTAL</small><h1>Welcome back</h1><p>Sign in to manage property billing.</p><form [formGroup]="lf" (ngSubmit)="login()"><label>Username<input placeholder="Username" formControlName="username"></label><label>Password<input type="password" placeholder="Password" formControlName="password"></label>@if(err){<p class="error">{{err}}</p>}<button>Log in</button></form></section></main>
@@ -30,7 +31,7 @@ type Page = 'Dashboard' | 'Properties & Units' | 'Billing configuration' | 'Bill
         <main class="content"><header><div><h1>{{p}}</h1><p>{{d?.propertyName || 'PropertyBill'}} — billing management</p></div><div class="profile"><span>{{s.username.slice(0,2).toUpperCase()}}</span><b>{{s.username}}</b></div></header>
           @if(p==='Dashboard'){<app-dashboard [token]="s.token"/>}
           @else if(p==='Properties & Units'){<app-properties [token]="s.token" (changed)="ld()"/>}
-          @else if(p==='Billing configuration'){<section class="panel"><div class="head"><div><h2>Billing items</h2><p>Charge types and rates used for bill generation.</p></div><button (click)="si=!si">{{si?'Cancel':'Add billing item'}}</button></div>@if(si){<form class="item-form" [formGroup]="itemForm" (ngSubmit)="addI()"><label>Charge type<input placeholder="e.g. Maintenance Fee" formControlName="chargeType"></label><label>Rate (RM)<input type="number" formControlName="defaultRate"></label><label>Frequency<select formControlName="frequency"><option>Monthly</option><option>Quarterly</option><option>Yearly</option></select></label><label>Billing day<input type="number" formControlName="billingDay"></label><label>Due day<input type="number" formControlName="dueDay"></label><label>Penalty rate (%)<input type="number" formControlName="penaltyRate"></label><label>Grace days<input type="number" formControlName="gracePeriodDays"></label><button>Save item</button></form>}<div class="table-wrap"><table><tr><th>Charge type</th><th>Rate</th><th>Frequency</th><th>Billing day</th><th>Due day</th><th>Penalty</th></tr>@for(i of is;track i.billingItemId){<tr><td>{{i.chargeType}}</td><td>RM {{i.defaultRate|number:'1.2-2'}}</td><td>{{i.frequency}}</td><td>{{i.billingDay}}</td><td>{{i.dueDay}}</td><td>{{i.penaltyRate}}%</td></tr>}</table></div></section>}
+          @else if(p==='Billing configuration'){<app-billing-configuration [token]="s.token"/>}
           @else if(p==='Bills'){<app-bill-generation [token]="s.token"/><section class="panel"><div class="head"><div><h2>All bills</h2><p>Every bill across {{d?.propertyName}}</p></div><button (click)="loadB()">Refresh</button></div><div class="table-wrap"><table><tr><th>Reference</th><th>Unit</th><th>Period</th><th>Due date</th><th>Total</th><th>Outstanding</th><th>Status</th></tr>@for(b of bs;track b.billId){<tr><td>{{b.referenceNumber}}</td><td>{{b.unitNumber}}</td><td>{{b.billingPeriod}}</td><td>{{b.dueDate|date:'mediumDate'}}</td><td>RM {{b.totalAmount|number:'1.2-2'}}</td><td>RM {{b.outstandingBalance|number:'1.2-2'}}</td><td><span class="status" [class.overdue]="b.status==='Overdue'">{{b.status}}</span></td></tr>}</table></div></section>}
           @else if(p==='Payments'){<app-payments [token]="s.token"/>}
           @else if(p==='Reports'){<app-reports [token]="s.token"/>}
