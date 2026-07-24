@@ -1,11 +1,10 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { Component } from '@angular/core';
-import { DatePipe, DecimalPipe } from '@angular/common';
 import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuditLogComponent } from './audit-log.component';
-import { BillGenerationComponent } from './bill-generation.component';
 import { BillingConfigurationComponent } from './billing-configuration.component';
+import { BillsComponent } from './bills.component';
 import { DashboardComponent } from './dashboard.component';
 import { PaymentsComponent } from './payments.component';
 import { PropertiesComponent } from './properties.component';
@@ -21,7 +20,7 @@ type Page = 'Dashboard' | 'Properties & Units' | 'Billing configuration' | 'Bill
 
 @Component({
   selector: 'app-root', standalone: true,
-  imports: [ReactiveFormsModule, DecimalPipe, DatePipe, DashboardComponent, ReportsComponent, RemindersComponent, AuditLogComponent, BillGenerationComponent, PaymentsComponent, PropertiesComponent, BillingConfigurationComponent],
+  imports: [ReactiveFormsModule, DashboardComponent, ReportsComponent, RemindersComponent, AuditLogComponent, PaymentsComponent, PropertiesComponent, BillingConfigurationComponent, BillsComponent],
   template: `
     @if (!s) {
       <main class="login"><section><b>Property<span>Bill</span></b><small>ADMIN PORTAL</small><h1>Welcome back</h1><p>Sign in to manage property billing.</p><form [formGroup]="lf" (ngSubmit)="login()"><label>Username<input placeholder="Username" formControlName="username"></label><label>Password<input type="password" placeholder="Password" formControlName="password"></label>@if(err){<p class="error">{{err}}</p>}<button>Log in</button></form></section></main>
@@ -32,7 +31,7 @@ type Page = 'Dashboard' | 'Properties & Units' | 'Billing configuration' | 'Bill
           @if(p==='Dashboard'){<app-dashboard [token]="s.token"/>}
           @else if(p==='Properties & Units'){<app-properties [token]="s.token" (changed)="ld()"/>}
           @else if(p==='Billing configuration'){<app-billing-configuration [token]="s.token"/>}
-          @else if(p==='Bills'){<app-bill-generation [token]="s.token"/><section class="panel"><div class="head"><div><h2>All bills</h2><p>Every bill across {{d?.propertyName}}</p></div><button (click)="loadB()">Refresh</button></div><div class="table-wrap"><table><tr><th>Reference</th><th>Unit</th><th>Period</th><th>Due date</th><th>Total</th><th>Outstanding</th><th>Status</th></tr>@for(b of bs;track b.billId){<tr><td>{{b.referenceNumber}}</td><td>{{b.unitNumber}}</td><td>{{b.billingPeriod}}</td><td>{{b.dueDate|date:'mediumDate'}}</td><td>RM {{b.totalAmount|number:'1.2-2'}}</td><td>RM {{b.outstandingBalance|number:'1.2-2'}}</td><td><span class="status" [class.overdue]="b.status==='Overdue'">{{b.status}}</span></td></tr>}</table></div></section>}
+          @else if(p==='Bills'){<app-bills [token]="s.token"/>}
           @else if(p==='Payments'){<app-payments [token]="s.token"/>}
           @else if(p==='Reports'){<app-reports [token]="s.token"/>}
           @else if(p==='Reminders'){<app-reminders [token]="s.token"/>}
