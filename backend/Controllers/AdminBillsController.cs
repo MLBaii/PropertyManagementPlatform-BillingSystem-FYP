@@ -21,4 +21,29 @@ public class AdminBillsController(AppDbContext context) : ControllerBase
         foreach (var unit in units) { var bill = new PropertyBill.Api.Models.Bill { UnitId=unit.UnitId,BillingPeriod=request.BillingPeriod,ReferenceNumber=$"BILL-{request.BillingPeriod}-{unit.UnitNumber.Replace("-","")}",IssueDate=DateTime.UtcNow,DueDate=dueDateUtc,Status="Unpaid",TotalAmount=items.Sum(item=>item.DefaultRate),OutstandingBalance=items.Sum(item=>item.DefaultRate) }; foreach(var item in items) bill.BillLineItems.Add(new PropertyBill.Api.Models.BillLineItem { Description=item.ChargeType,Amount=item.DefaultRate,LineItemType="Charge",BillingItemId=item.BillingItemId }); context.Bills.Add(bill); }
         await context.SaveChangesAsync(); return Ok(new GenerateBillsResponse { BillsGenerated = units.Count });
     }
+
+    [HttpPost("{billId:int}/void")]
+    public async Task<IActionResult> Void(int billId)
+    {
+        var bill = await context.Bills.Include(item => item.Payments).FirstOrDefaultAsync(item => item.BillId == billId);
+        if (bill is null) return NotFound(new { message = "Bill was not found." });
+        if (bill.Status == "Voided") return BadRequest(new { message = "This bill has already been voided." });
+        if (bill.Status == "Paid" || bill.Payments.Any()) return Conflict(new { message = "A bill with recorded payments cannot be voided." });
+        if (bill.Status == "ProofSubmitted") return Conflict(new { message = "A bill with a payment proof under review cannot be voided." });
+
+        bill.Status = "Voided";
+        bill.OutstandingBalance = 0;
+        if (int.TryParse(User.FindFirst("AdminUserId")?.Value, out var adminId))
+            context.AuditLogs.Add(new PropertyBill.Api.Models.AuditLog
+            {
+                AdminUserId = adminId,
+                ActionType = "Void",
+                AffectedEntity = "Bill",
+                AffectedEntityId = bill.BillId,
+                Description = $"Voided bill {bill.ReferenceNumber}."
+            });
+
+        await context.SaveChangesAsync();
+        return NoContent();
+    }
 }

@@ -20,4 +20,25 @@ public class AdminBillingItemsController(AppDbContext context) : ControllerBase
         if(int.TryParse(User.FindFirst("AdminUserId")?.Value,out var adminId))context.AuditLogs.Add(new PropertyBill.Api.Models.AuditLog{AdminUserId=adminId,ActionType="Create",AffectedEntity="BillingItem",Description=$"Created billing item {name}."});
         await context.SaveChangesAsync(); return CreatedAtAction(nameof(Get),new AdminBillingItemDto{BillingItemId=item.BillingItemId,ChargeType=item.ChargeType,DefaultRate=item.DefaultRate,Frequency=item.Frequency,BillingDay=item.BillingDay,DueDay=item.DueDay,PenaltyRate=item.PenaltyRate,GracePeriodDays=item.GracePeriodDays,IsActive=item.IsActive});
     }
+
+    [HttpPatch("{billingItemId:int}/status")]
+    public async Task<IActionResult> UpdateStatus(int billingItemId, [FromBody] UpdateBillingItemStatusRequest request)
+    {
+        var item = await context.BillingItems.FindAsync(billingItemId);
+        if (item is null) return NotFound(new { message = "Billing item was not found." });
+
+        item.IsActive = request.IsActive;
+        if (int.TryParse(User.FindFirst("AdminUserId")?.Value, out var adminId))
+            context.AuditLogs.Add(new PropertyBill.Api.Models.AuditLog
+            {
+                AdminUserId = adminId,
+                ActionType = request.IsActive ? "Reactivate" : "Deactivate",
+                AffectedEntity = "BillingItem",
+                AffectedEntityId = item.BillingItemId,
+                Description = $"{(request.IsActive ? "Reactivated" : "Deactivated")} billing item {item.ChargeType}."
+            });
+
+        await context.SaveChangesAsync();
+        return NoContent();
+    }
 }
