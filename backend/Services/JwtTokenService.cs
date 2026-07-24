@@ -37,4 +37,17 @@ public class JwtTokenService : IJwtTokenService
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+    public string GenerateAdminToken(int adminUserId, string role)
+    {
+        var jwtSection = _configuration.GetSection("Jwt");
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["Key"]!));
+        var token = new JwtSecurityToken(
+            issuer: jwtSection["Issuer"],
+            audience: jwtSection["Audience"],
+            claims: [new Claim("AdminUserId", adminUserId.ToString()), new Claim(ClaimTypes.Role, role)],
+            expires: DateTime.UtcNow.AddMinutes(jwtSection.GetValue<int>("ExpiryMinutes")),
+            signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
 }

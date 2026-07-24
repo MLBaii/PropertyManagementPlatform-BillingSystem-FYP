@@ -1,0 +1,2 @@
+namespace PropertyBill.Api.Dtos;
+public class AdminPaymentProofDto { public int ProofId { get; set; } public string ResidentName { get; set; } = string.Empty; public string UnitNumber { get; set; } = string.Empty; public string FileUrl { get; set; } = string.Empty; public string FileType { get; set; } = string.Empty; public long FileSize { get; set; } public string Status { get; set; } = string.Empty; public DateTime SubmittedAt { get; set; } public string? AdminRemarks { get; set; } }
