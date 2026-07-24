@@ -3,80 +3,29 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, Input, OnChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-interface PaymentProof {
-  proofId: number;
-  residentName: string;
-  unitNumber: string;
-  fileUrl: string;
-  fileType: string;
-  fileSize: number;
-  status: 'Pending' | 'Confirmed' | 'Rejected';
-  submittedAt: string;
-  adminRemarks?: string;
-}
+interface PaymentProof { proofId:number; residentName:string; unitNumber:string; fileUrl:string; fileType:string; fileSize:number; status:'Pending'|'Confirmed'|'Rejected'; submittedAt:string; adminRemarks?:string; }
 
 @Component({
-  selector: 'app-payments',
-  standalone: true,
-  imports: [FormsModule, DatePipe],
-  template: `
-    <section class="panel">
-      <div class="head">
-        <div><h2>Payment proof reviews</h2><p>Confirm or reject resident payment submissions.</p></div>
-        <button (click)="load()" [disabled]="loading">{{ loading ? 'Refreshing...' : 'Refresh' }}</button>
-      </div>
-
-      @if (message) { <p class="message" [class.error]="isError">{{ message }}</p> }
-      @if (loading) { <p class="empty">Loading payment submissions...</p> }
-      @else if (proofs.length === 0) { <p class="empty">No payment proofs have been submitted yet.</p> }
-      @else {
-        <div class="table-wrap"><table>
-          <thead><tr><th>Resident</th><th>Unit</th><th>Submitted</th><th>Proof</th><th>Status</th><th>Review</th></tr></thead>
-          <tbody>@for (proof of proofs; track proof.proofId) {
-            <tr>
-              <td>{{ proof.residentName }}</td><td>{{ proof.unitNumber }}</td><td>{{ proof.submittedAt | date:'mediumDate' }}</td>
-              <td><a [href]="proof.fileUrl" target="_blank" rel="noopener">Open proof</a></td>
-              <td><span class="status" [class.confirmed]="proof.status === 'Confirmed'" [class.rejected]="proof.status === 'Rejected'">{{ proof.status }}</span></td>
-              <td>
-                @if (proof.status === 'Pending') {
-                  <div class="review"><input [(ngModel)]="remarks[proof.proofId]" maxlength="500" placeholder="Optional remarks"><button class="confirm" (click)="review(proof, 'Confirmed')" [disabled]="reviewing === proof.proofId">Confirm</button><button class="reject" (click)="review(proof, 'Rejected')" [disabled]="reviewing === proof.proofId">Reject</button></div>
-                } @else { <span class="remarks">{{ proof.adminRemarks || 'Reviewed' }}</span> }
-              </td>
-            </tr>
-          }</tbody>
-        </table></div>
-      }
-    </section>`,
-  styles: [`
-    .panel{margin-top:28px;padding:22px;background:#fff;border:1px solid #e4ddd7;border-radius:12px}.head{display:flex;justify-content:space-between;gap:16px;align-items:center}.head h2{margin:0 0 6px}.head p,.empty,.remarks{margin:0;color:#736963}.message{font-weight:700;color:#276738}.error{color:#b42318}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;margin-top:18px;min-width:860px}th,td{text-align:left;padding:13px 10px;border-top:1px solid #e9e2dc;vertical-align:middle}th{color:#736963;font-size:.8rem;text-transform:uppercase}a{color:#a84d2e;font-weight:700}.status{display:inline-block;padding:4px 8px;border-radius:9px;background:#fff2d7;color:#896417;font-size:.85rem}.confirmed{background:#e7f4ea;color:#276738}.rejected{background:#fde4da;color:#9c2b18}.review{display:flex;gap:7px;align-items:center}.review input{min-width:150px;padding:8px;border:1px solid #d8cec7;border-radius:6px}.review button,.head button{padding:9px 12px;border:0;border-radius:7px;color:#fff;font-weight:700;cursor:pointer;background:#bd613f}.review .confirm{background:#276738}.review .reject{background:#a13d28}.review button:disabled,.head button:disabled{opacity:.6;cursor:wait}
+  selector:'app-payments', standalone:true, imports:[FormsModule,DatePipe],
+  template:`
+    <section class="metrics"><article><span>Total submissions</span><strong>{{proofs.length}}</strong><small>All uploaded proofs</small></article><article><span>Pending review</span><strong class="yellow">{{pendingCount}}</strong><small>Requires action</small></article><article><span>Confirmed</span><strong class="green">{{confirmedCount}}</strong><small>Payments approved</small></article><article><span>Rejected</span><strong class="red">{{rejectedCount}}</strong><small>Needs follow-up</small></article></section>
+    <section class="panel"><div class="head"><div><h2>Payment proof reviews</h2><p>Review resident payment submissions and record the decision.</p></div><button class="outline" (click)="load()" [disabled]="loading">{{loading?'Refreshing...':'Refresh'}}</button></div>
+      @if(message){<p class="message" [class.error]="isError">{{message}}</p>}
+      <div class="toolbar"><input [(ngModel)]="query" placeholder="Search resident or unit..."><select [(ngModel)]="statusFilter"><option value="All">All statuses</option><option value="Pending">Pending</option><option value="Confirmed">Confirmed</option><option value="Rejected">Rejected</option></select></div>
+      @if(loading){<p class="empty">Loading payment submissions...</p>} @else if(!filtered.length){<p class="empty">No payment proofs match this filter.</p>} @else {<div class="table-wrap"><table><thead><tr><th>Resident</th><th>Unit</th><th>Submitted</th><th>Proof</th><th>Status</th><th>Review action</th></tr></thead><tbody>@for(proof of filtered;track proof.proofId){<tr><td><b>{{proof.residentName}}</b></td><td>{{proof.unitNumber}}</td><td>{{proof.submittedAt|date:'mediumDate'}}</td><td><a [href]="proof.fileUrl" target="_blank" rel="noopener">Open proof</a><small>{{proof.fileType}}</small></td><td><span class="status" [class.confirmed]="proof.status==='Confirmed'" [class.rejected]="proof.status==='Rejected'">{{proof.status}}</span></td><td>@if(proof.status==='Pending'){<div class="review"><input [(ngModel)]="remarks[proof.proofId]" maxlength="500" placeholder="Optional remarks"><button class="confirm" (click)="review(proof,'Confirmed')" [disabled]="reviewing===proof.proofId">Confirm</button><button class="reject" (click)="review(proof,'Rejected')" [disabled]="reviewing===proof.proofId">Reject</button></div>}@else{<span class="remarks">{{proof.adminRemarks||'Reviewed'}}</span>}</td></tr>}</tbody></table></div>}
+    </section>
+  `,
+  styles:[`
+    :host{display:block}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin:26px 0}.metrics article,.panel{background:#171e2d;border:1px solid #2a3854;border-radius:15px;box-shadow:0 12px 30px #070a1026}.metrics article{padding:19px}.metrics span,.metrics small{display:block;color:#8fa0ba;font-size:.8rem}.metrics strong{display:block;color:#edf3ff;font-size:1.55rem;margin:13px 0 5px}.metrics .yellow{color:#ffbf55}.metrics .green{color:#42d9a3}.metrics .red{color:#ff8585}.panel{padding:22px}.head{display:flex;justify-content:space-between;gap:16px;align-items:center}.head h2{margin:0;color:#eef4ff;font-size:1.1rem}.head p{margin:6px 0 0;color:#8293ae;font-size:.83rem}.head button,.review button{border:0;border-radius:8px;padding:10px 12px;color:#fff;font-weight:700;cursor:pointer}.head .outline{background:transparent;border:1px solid #3b4d6b;color:#a9c5f7}.head button:disabled,.review button:disabled{opacity:.6;cursor:wait}.message{margin:15px 0;color:#47dca8;font-size:.85rem;font-weight:700}.message.error{color:#ff9292}.toolbar{display:flex;gap:12px;margin:22px 0}.toolbar input,.toolbar select,.review input{box-sizing:border-box;padding:10px 11px;border:1px solid #34435e;background:#101624;border-radius:8px;color:#eef4ff;font:inherit}.toolbar input{flex:1}.toolbar select{min-width:170px}.table-wrap{overflow:auto}table{width:100%;min-width:930px;border-collapse:collapse}th,td{text-align:left;padding:14px 12px;border-top:1px solid #2a364c;color:#cbd6e7;vertical-align:middle}th{color:#8293ae;font-size:.76rem;text-transform:uppercase;letter-spacing:.04em}td b{color:#eef4ff}td a{display:block;color:#72a8ff;font-weight:700;text-decoration:none}td small{display:block;color:#71839c;font-size:.7rem;margin-top:4px}.status{display:inline-block;padding:4px 9px;border-radius:10px;background:#493a18;color:#ffc75d;font-size:.77rem}.status.confirmed{background:#103b30;color:#47dca8}.status.rejected{background:#51262b;color:#ff9999}.review{display:flex;gap:7px;align-items:center}.review input{min-width:155px}.review .confirm{background:#167658}.review .reject{background:#a83d44}.remarks{color:#8293ae;font-size:.8rem}.empty{padding:28px 0;color:#8495ad;text-align:center}@media(max-width:900px){.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.metrics{grid-template-columns:1fr}.head,.toolbar{align-items:flex-start;flex-direction:column}.toolbar input,.toolbar select{width:100%}}
   `]
 })
 export class PaymentsComponent implements OnChanges {
-  @Input({ required: true }) token = '';
-  proofs: PaymentProof[] = [];
-  remarks: Record<number, string> = {};
-  loading = false;
-  reviewing: number | null = null;
-  message = '';
-  isError = false;
-
-  constructor(private http: HttpClient) {}
-
-  ngOnChanges() { if (this.token) this.load(); }
-  private headers() { return new HttpHeaders({ Authorization: `Bearer ${this.token}` }); }
-  load() {
-    this.loading = true;
-    this.http.get<PaymentProof[]>('http://localhost:5112/api/admin/payment-proofs', { headers: this.headers() }).subscribe({
-      next: (data) => { this.proofs = data; this.loading = false; },
-      error: () => { this.message = 'Unable to load payment submissions.'; this.isError = true; this.loading = false; }
-    });
-  }
-  review(proof: PaymentProof, decision: 'Confirmed' | 'Rejected') {
-    this.reviewing = proof.proofId;
-    this.message = '';
-    this.http.put(`http://localhost:5112/api/admin/payment-proofs/${proof.proofId}/review`, { decision, adminRemarks: this.remarks[proof.proofId]?.trim() || null }, { headers: this.headers() }).subscribe({
-      next: () => { this.message = `Payment proof ${decision.toLowerCase()}.`; this.isError = false; this.reviewing = null; this.load(); },
-      error: (error) => { this.message = error.status === 409 ? 'This proof has already been reviewed.' : 'Unable to review this payment proof.'; this.isError = true; this.reviewing = null; }
-    });
-  }
+  @Input({required:true}) token=''; proofs:PaymentProof[]=[];remarks:Record<number,string>={};loading=false;reviewing:number|null=null;message='';isError=false;query='';statusFilter='All';
+  constructor(private http:HttpClient){}
+  ngOnChanges(){if(this.token)this.load()}
+  private headers(){return new HttpHeaders({Authorization:`Bearer ${this.token}`})}
+  get filtered(){const value=this.query.trim().toLowerCase();return this.proofs.filter(proof=>(this.statusFilter==='All'||proof.status===this.statusFilter)&&(!value||`${proof.residentName} ${proof.unitNumber}`.toLowerCase().includes(value)))}
+  get pendingCount(){return this.proofs.filter(proof=>proof.status==='Pending').length} get confirmedCount(){return this.proofs.filter(proof=>proof.status==='Confirmed').length} get rejectedCount(){return this.proofs.filter(proof=>proof.status==='Rejected').length}
+  load(){this.loading=true;this.http.get<PaymentProof[]>('http://localhost:5112/api/admin/payment-proofs',{headers:this.headers()}).subscribe({next:data=>{this.proofs=data;this.loading=false},error:()=>{this.message='Unable to load payment submissions.';this.isError=true;this.loading=false}})}
+  review(proof:PaymentProof,decision:'Confirmed'|'Rejected'){this.reviewing=proof.proofId;this.message='';this.http.put(`http://localhost:5112/api/admin/payment-proofs/${proof.proofId}/review`,{decision,adminRemarks:this.remarks[proof.proofId]?.trim()||null},{headers:this.headers()}).subscribe({next:()=>{this.message=`Payment proof ${decision.toLowerCase()}.`;this.isError=false;this.reviewing=null;this.load()},error:error=>{this.message=error.status===409?'This proof has already been reviewed.':'Unable to review this payment proof.';this.isError=true;this.reviewing=null}})}
 }
