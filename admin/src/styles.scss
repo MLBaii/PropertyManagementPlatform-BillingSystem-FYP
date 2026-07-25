@@ -1,1 +1,74 @@
 body{margin:0}
+
+/* The resident app uses a warm brown / terracotta dark palette. These global
+   theme rules intentionally affect only the admin shell, never the mobile app. */
+.shell{position:relative}
+.theme-toggle{position:absolute;top:29px;right:145px;z-index:3;display:flex;align-items:center;justify-content:center;gap:7px;box-sizing:border-box;width:118px;height:40px;padding:0 10px!important;border:1px solid #755546!important;border-radius:9px!important;background:transparent!important;color:#ffd7c6!important;font-size:.78rem;line-height:1;white-space:nowrap;cursor:pointer}.theme-toggle span{font-size:1rem}
+.login{position:relative}.login-theme-toggle{position:absolute;top:24px;right:24px;display:flex;align-items:center;justify-content:center;gap:7px;box-sizing:border-box;width:132px;height:40px;padding:0 10px!important;border:1px solid #3a4b67!important;border-radius:9px!important;background:transparent!important;color:#a9c5f7!important;font-size:.78rem;white-space:nowrap;cursor:pointer}.login-theme-toggle span{font-size:1rem}
+
+.theme-dark{background:#1a1614!important;color:#f8eee9!important}
+.theme-dark aside{background:#211b18!important;border-color:#44372f!important}
+.theme-dark .brand,.theme-dark .content header{border-color:#44372f!important}
+.theme-dark .content header h1,.theme-dark h2,.theme-dark h3,.theme-dark strong,.theme-dark td b{color:#fff7f3!important}
+.theme-dark .content header p,.theme-dark .head p,.theme-dark .card-head p,.theme-dark .metric span,.theme-dark .metric small,.theme-dark .metrics span,.theme-dark .metrics small,.theme-dark label,.theme-dark th,.theme-dark .toolbar span{color:#cbb3a7!important}
+.theme-dark nav a{color:#d6c1b7!important}
+.theme-dark nav a:hover{background:#352821!important;color:#fff7f3!important}
+.theme-dark nav a.active{background:#513128!important;color:#f4a083!important;box-shadow:inset 3px 0 #dc805e!important}
+.theme-dark .panel,.theme-dark .run-panel,.theme-dark .dashboard-card,.theme-dark .metric,.theme-dark .metrics article{background:#251f1b!important;border-color:#513d34!important}
+.theme-dark .item-form,.theme-dark .unit-form,.theme-dark .form{background:#211b18!important;border-color:#513d34!important}
+.theme-dark input,.theme-dark select,.theme-dark .toolbar input,.theme-dark .toolbar select,.theme-dark .review input,.theme-dark .review select{background:#211b18!important;border-color:#514139!important;color:#fff7f3!important}
+.theme-dark button:not(.theme-toggle):not(.logout):not(.outline):not(.void):not(.cancel):not(.toggle){background:#dc805e!important;color:#241815!important}
+.theme-dark .outline,.theme-dark .logout,.theme-dark .void,.theme-dark .cancel,.theme-dark .toggle{background:transparent!important;border-color:#755546!important;color:#f0b39d!important}
+.theme-dark th,.theme-dark td,.theme-dark .age-row,.theme-dark .activity{border-color:#4a3b34!important;color:#ead9d2!important}
+.theme-dark .track{background:#171210!important}
+.theme-dark .unit-row{background:#211b18!important;border-color:#4a3b34!important}
+.theme-dark .profile span{border-color:#dc805e!important;color:#f4a083!important}
+.theme-dark .brand b span{color:#dc805e!important}
+
+.theme-light{background:#faf7f4!important;color:#2d211c!important}
+.theme-light aside{background:#fffdfb!important;border-color:#e4d5cd!important}
+.theme-light .brand,.theme-light .content header{border-color:#e4d5cd!important}
+.theme-light .content header h1,.theme-light h2,.theme-light h3,.theme-light strong,.theme-light td b{color:#2d211c!important}
+.theme-light .content header p,.theme-light .head p,.theme-light .card-head p,.theme-light .metric span,.theme-light .metric small,.theme-light .metrics span,.theme-light .metrics small,.theme-light label,.theme-light th,.theme-light .toolbar span{color:#775f54!important}
+.theme-light nav a{color:#654e44!important}
+.theme-light nav a:hover{background:#f8ebe5!important;color:#2d211c!important}
+.theme-light nav a.active{background:#f5d8cd!important;color:#a74f32!important;box-shadow:inset 3px 0 #d97554!important}
+.theme-light .panel,.theme-light .run-panel,.theme-light .dashboard-card,.theme-light .metric,.theme-light .metrics article{background:#fffdfb!important;border-color:#e4d5cd!important}
+.theme-light .item-form,.theme-light .unit-form,.theme-light .form{background:#fff7f3!important;border-color:#ead9d1!important}
+.theme-light input,.theme-light select,.theme-light .toolbar input,.theme-light .toolbar select,.theme-light .review input,.theme-light .review select{background:#fff!important;border-color:#cdb9ae!important;color:#2d211c!important}
+.theme-light button:not(.theme-toggle):not(.logout):not(.outline):not(.void):not(.cancel):not(.toggle){background:#d97554!important;color:#fff!important}
+.theme-light .outline,.theme-light .logout,.theme-light .void,.theme-light .cancel,.theme-light .toggle{background:transparent!important;border-color:#bb8b79!important;color:#9a432c!important}
+.theme-light th,.theme-light td,.theme-light .age-row,.theme-light .activity{border-color:#eadbd4!important;color:#3a2b25!important}
+.theme-light .track{background:#f2e6e0!important}
+.theme-light .unit-row{background:#fff7f3!important;border-color:#eadbd4!important}
+.theme-light .profile span{border-color:#d97554!important;color:#a74f32!important}
+.theme-light .brand b span{color:#d97554!important}
+.theme-light .theme-toggle{border-color:#bb8b79!important;color:#9a432c!important}
+.login.theme-light{background:radial-gradient(circle at 20% 10%,#5a3229,#1a1614 55%)!important}.login.theme-light section{background:#251f1b!important;border-color:#513d34!important}.login.theme-light b,.login.theme-light h1{color:#fff7f3!important}.login.theme-light b span{color:#dc805e!important}.login.theme-light small,.login.theme-light p,.login.theme-light label{color:#cbb3a7!important}.login.theme-light input{background:#211b18!important;border-color:#514139!important;color:#fff7f3!important}.login.theme-light form button{background:#dc805e!important;color:#241815!important}.login.theme-light .login-theme-toggle{border-color:#755546!important;color:#ffd7c6!important}
+
+/* Dark = original blue admin portal. Light = resident-app inspired brown palette. */
+.theme-dark{background:#0d111b!important;color:#e9effb!important}
+.theme-dark aside{background:#151b29!important;border-color:#28344a!important}
+.theme-dark .brand,.theme-dark .content header{border-color:#28344a!important}
+.theme-dark .content header h1,.theme-dark h2,.theme-dark h3,.theme-dark strong,.theme-dark td b{color:#eef4ff!important}
+.theme-dark .content header p,.theme-dark .head p,.theme-dark .card-head p,.theme-dark .metric span,.theme-dark .metric small,.theme-dark .metrics span,.theme-dark .metrics small,.theme-dark label,.theme-dark th,.theme-dark .toolbar span{color:#8293ae!important}
+.theme-dark nav a{color:#9baac1!important}.theme-dark nav a:hover{background:#1c263a!important;color:#edf3ff!important}.theme-dark nav a.active{background:#1c3156!important;color:#62a0ff!important;box-shadow:inset 3px 0 #3d82f6!important}
+.theme-dark .panel,.theme-dark .run-panel,.theme-dark .dashboard-card,.theme-dark .metric,.theme-dark .metrics article{background:#171e2d!important;border-color:#2a3854!important}
+.theme-dark .item-form,.theme-dark .unit-form,.theme-dark .form{background:#121927!important;border-color:#2a3854!important}
+.theme-dark input,.theme-dark select,.theme-dark .toolbar input,.theme-dark .toolbar select,.theme-dark .review input,.theme-dark .review select{background:#101624!important;border-color:#34435e!important;color:#eef4ff!important}
+.theme-dark button:not(.theme-toggle):not(.logout):not(.outline):not(.void):not(.cancel):not(.toggle){background:#347cf2!important;color:#fff!important}
+.theme-dark .outline,.theme-dark .logout,.theme-dark .void,.theme-dark .cancel,.theme-dark .toggle{background:transparent!important;border-color:#3a4b67!important;color:#a9c5f7!important}
+.theme-dark th,.theme-dark td,.theme-dark .age-row,.theme-dark .activity{border-color:#2a364c!important;color:#cbd6e7!important}.theme-dark .track{background:#101624!important}.theme-dark .unit-row{background:#111724!important;border-color:#26324a!important}.theme-dark .profile span{border-color:#3e86ff!important;color:#65a0ff!important}.theme-dark .brand b span{color:#4a91ff!important}.theme-dark .theme-toggle{border-color:#3a4b67!important;color:#a9c5f7!important}
+
+.theme-light{background:#1a1614!important;color:#f8eee9!important}
+.theme-light aside{background:#211b18!important;border-color:#44372f!important}
+.theme-light .brand,.theme-light .content header{border-color:#44372f!important}
+.theme-light .content header h1,.theme-light h2,.theme-light h3,.theme-light strong,.theme-light td b{color:#fff7f3!important}
+.theme-light .content header p,.theme-light .head p,.theme-light .card-head p,.theme-light .metric span,.theme-light .metric small,.theme-light .metrics span,.theme-light .metrics small,.theme-light label,.theme-light th,.theme-light .toolbar span{color:#cbb3a7!important}
+.theme-light nav a{color:#d6c1b7!important}.theme-light nav a:hover{background:#352821!important;color:#fff7f3!important}.theme-light nav a.active{background:#513128!important;color:#f4a083!important;box-shadow:inset 3px 0 #dc805e!important}
+.theme-light .panel,.theme-light .run-panel,.theme-light .dashboard-card,.theme-light .metric,.theme-light .metrics article{background:#251f1b!important;border-color:#513d34!important}
+.theme-light .item-form,.theme-light .unit-form,.theme-light .form{background:#211b18!important;border-color:#513d34!important}
+.theme-light input,.theme-light select,.theme-light .toolbar input,.theme-light .toolbar select,.theme-light .review input,.theme-light .review select{background:#211b18!important;border-color:#514139!important;color:#fff7f3!important}
+.theme-light button:not(.theme-toggle):not(.logout):not(.outline):not(.void):not(.cancel):not(.toggle){background:#dc805e!important;color:#241815!important}
+.theme-light .outline,.theme-light .logout,.theme-light .void,.theme-light .cancel,.theme-light .toggle{background:transparent!important;border-color:#755546!important;color:#f0b39d!important}
+.theme-light th,.theme-light td,.theme-light .age-row,.theme-light .activity{border-color:#4a3b34!important;color:#ead9d2!important}.theme-light .track{background:#171210!important}.theme-light .unit-row{background:#211b18!important;border-color:#4a3b34!important}.theme-light .profile span{border-color:#dc805e!important;color:#f4a083!important}.theme-light .brand b span{color:#dc805e!important}.theme-light .theme-toggle{border-color:#755546!important;color:#ffd7c6!important}

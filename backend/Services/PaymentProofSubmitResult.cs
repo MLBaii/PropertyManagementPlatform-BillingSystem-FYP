@@ -10,6 +10,7 @@ public enum PaymentProofSubmitStatus
     InvalidFile,
     NoBillsTagged,
     BillsNotFound,
+    BillsNotPayable,
     StorageUploadFailed,
 }
 
@@ -55,6 +56,13 @@ public class PaymentProofSubmitResult
         {
             Status = PaymentProofSubmitStatus.BillsNotFound,
             ErrorMessage = "One or more selected bills could not be found.",
+        };
+
+    public static PaymentProofSubmitResult BillsNotPayable() =>
+        new()
+        {
+            Status = PaymentProofSubmitStatus.BillsNotPayable,
+            ErrorMessage = "Payment proofs can only be submitted for unpaid, active bills.",
         };
 
     public static PaymentProofSubmitResult StorageUploadFailed() =>

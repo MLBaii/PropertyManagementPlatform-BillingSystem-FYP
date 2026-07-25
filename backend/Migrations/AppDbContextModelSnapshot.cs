@@ -117,6 +117,25 @@ namespace PropertyBill.Api.Migrations
                     b.ToTable("AuditLogs");
                 });
 
+            modelBuilder.Entity("PropertyBill.Api.Models.AdditionalCharge", b =>
+                {
+                    b.Property<int>("AdditionalChargeId").ValueGeneratedOnAdd().HasColumnType("integer");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AdditionalChargeId"));
+                    b.Property<decimal>("Amount").HasColumnType("numeric");
+                    b.Property<int?>("BillId").HasColumnType("integer");
+                    b.Property<string>("BillingPeriod").IsRequired().HasColumnType("text");
+                    b.Property<string>("Category").IsRequired().HasColumnType("text");
+                    b.Property<DateTime>("CreatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<string>("Description").IsRequired().HasColumnType("text");
+                    b.Property<string>("Source").IsRequired().HasColumnType("text");
+                    b.Property<string>("Status").IsRequired().HasColumnType("text");
+                    b.Property<int>("UnitId").HasColumnType("integer");
+                    b.HasKey("AdditionalChargeId");
+                    b.HasIndex("BillId");
+                    b.HasIndex("UnitId");
+                    b.ToTable("AdditionalCharges");
+                });
+
             modelBuilder.Entity("PropertyBill.Api.Models.Bill", b =>
                 {
                     b.Property<int>("BillId")
@@ -615,6 +634,21 @@ namespace PropertyBill.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("AdminUser");
+                });
+
+            modelBuilder.Entity("PropertyBill.Api.Models.AdditionalCharge", b =>
+                {
+                    b.HasOne("PropertyBill.Api.Models.Bill", "Bill")
+                        .WithMany()
+                        .HasForeignKey("BillId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                    b.HasOne("PropertyBill.Api.Models.Unit", "Unit")
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                    b.Navigation("Bill");
+                    b.Navigation("Unit");
                 });
 
             modelBuilder.Entity("PropertyBill.Api.Models.Bill", b =>

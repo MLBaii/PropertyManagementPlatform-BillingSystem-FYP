@@ -109,6 +109,15 @@ builder.Services.AddHttpClient<IExpoPushService, ExpoPushService>(client =>
 
 var app = builder.Build();
 
+// Keep a local development database aligned with the checked-in migrations.
+// Production deployments should apply migrations through their deployment process.
+if (app.Environment.IsDevelopment())
+{
+    using var migrationScope = app.Services.CreateScope();
+    var migrationContext = migrationScope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await migrationContext.Database.MigrateAsync();
+}
+
 if (args.Contains("--seed") || args.Contains("--reseed"))
 {
     using var scope = app.Services.CreateScope();

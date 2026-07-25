@@ -23,6 +23,7 @@ public class AppDbContext : DbContext
     public DbSet<AdminUser> AdminUsers => Set<AdminUser>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+    public DbSet<AdditionalCharge> AdditionalCharges => Set<AdditionalCharge>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -60,6 +61,18 @@ public class AppDbContext : DbContext
             .WithOne(ubr => ubr.Unit)
             .HasForeignKey(ubr => ubr.UnitId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<AdditionalCharge>()
+            .HasOne(ac => ac.Unit)
+            .WithMany()
+            .HasForeignKey(ac => ac.UnitId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<AdditionalCharge>()
+            .HasOne(ac => ac.Bill)
+            .WithMany()
+            .HasForeignKey(ac => ac.BillId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         // Resident 1—1 Account. Account is the principal side (no FK of its own); Resident
         // holds the FK. Restrict rather than Cascade so an Account can't vanish out from
