@@ -6,6 +6,7 @@ import { AuditLogComponent } from './audit-log.component';
 import { BillingConfigurationComponent } from './billing-configuration.component';
 import { BillsComponent } from './bills.component';
 import { DashboardComponent } from './dashboard.component';
+import { DisputesComponent } from './disputes.component';
 import { PaymentsComponent } from './payments.component';
 import { PropertiesComponent } from './properties.component';
 import { RemindersComponent } from './reminders.component';
@@ -16,23 +17,24 @@ interface Dash { propertyName: string; activeUnits: number; outstandingBalance: 
 interface Unit { unitId: number; unitNumber: string; floor: number; type: string; isActive: boolean; residentCount: number; }
 interface Item { billingItemId: number; chargeType: string; defaultRate: number; frequency: string; billingDay: number; dueDay: number; penaltyRate: number; gracePeriodDays: number; }
 interface Bill { billId: number; referenceNumber: string; unitNumber: string; billingPeriod: string; dueDate: string; totalAmount: number; outstandingBalance: number; status: string; }
-type Page = 'Dashboard' | 'Properties & Units' | 'Billing configuration' | 'Bills' | 'Payments' | 'Reports' | 'Reminders' | 'Audit log';
+type Page = 'Dashboard' | 'Properties & Units' | 'Billing configuration' | 'Bills' | 'Payments' | 'Disputes' | 'Reports' | 'Reminders' | 'Audit log';
 
 @Component({
   selector: 'app-root', standalone: true,
-  imports: [ReactiveFormsModule, DashboardComponent, ReportsComponent, RemindersComponent, AuditLogComponent, PaymentsComponent, PropertiesComponent, BillingConfigurationComponent, BillsComponent],
+  imports: [ReactiveFormsModule, DashboardComponent, ReportsComponent, RemindersComponent, AuditLogComponent, PaymentsComponent, DisputesComponent, PropertiesComponent, BillingConfigurationComponent, BillsComponent],
   template: `
     @if (!s) {
       <main class="login"><section><b>Property<span>Bill</span></b><small>ADMIN PORTAL</small><h1>Welcome back</h1><p>Sign in to manage property billing.</p><form [formGroup]="lf" (ngSubmit)="login()"><label>Username<input placeholder="Username" formControlName="username"></label><label>Password<input type="password" placeholder="Password" formControlName="password"></label>@if(err){<p class="error">{{err}}</p>}<button>Log in</button></form></section></main>
     } @else {
       <div class="shell">
-        <aside><div class="brand"><b>Property<span>Bill</span></b><small>Admin Portal</small></div><nav><small>MAIN</small><a (click)="select('Dashboard')" [class.active]="p==='Dashboard'">Dashboard</a><a (click)="select('Properties & Units')" [class.active]="p==='Properties & Units'">Properties & units</a><small>BILLING</small><a (click)="select('Billing configuration')" [class.active]="p==='Billing configuration'">Billing configuration</a><a (click)="select('Bills')" [class.active]="p==='Bills'">Bills</a><a (click)="select('Payments')" [class.active]="p==='Payments'">Payments</a><a (click)="select('Reports')" [class.active]="p==='Reports'">Reports</a><small>SYSTEM</small><a (click)="select('Reminders')" [class.active]="p==='Reminders'">Reminders</a><a (click)="select('Audit log')" [class.active]="p==='Audit log'">Audit log</a></nav><button class="logout" (click)="logout()">Log out</button></aside>
+        <aside><div class="brand"><b>Property<span>Bill</span></b><small>Admin Portal</small></div><nav><small>MAIN</small><a (click)="select('Dashboard')" [class.active]="p==='Dashboard'">Dashboard</a><a (click)="select('Properties & Units')" [class.active]="p==='Properties & Units'">Properties & units</a><small>BILLING</small><a (click)="select('Billing configuration')" [class.active]="p==='Billing configuration'">Billing configuration</a><a (click)="select('Bills')" [class.active]="p==='Bills'">Bills</a><a (click)="select('Payments')" [class.active]="p==='Payments'">Payments</a><a (click)="select('Disputes')" [class.active]="p==='Disputes'">Disputes</a><a (click)="select('Reports')" [class.active]="p==='Reports'">Reports</a><small>SYSTEM</small><a (click)="select('Reminders')" [class.active]="p==='Reminders'">Reminders</a><a (click)="select('Audit log')" [class.active]="p==='Audit log'">Audit log</a></nav><button class="logout" (click)="logout()">Log out</button></aside>
         <main class="content"><header><div><h1>{{p}}</h1><p>{{d?.propertyName || 'PropertyBill'}} — billing management</p></div><div class="profile"><span>{{s.username.slice(0,2).toUpperCase()}}</span><b>{{s.username}}</b></div></header>
           @if(p==='Dashboard'){<app-dashboard [token]="s.token"/>}
           @else if(p==='Properties & Units'){<app-properties [token]="s.token" (changed)="ld()"/>}
           @else if(p==='Billing configuration'){<app-billing-configuration [token]="s.token"/>}
           @else if(p==='Bills'){<app-bills [token]="s.token"/>}
           @else if(p==='Payments'){<app-payments [token]="s.token"/>}
+          @else if(p==='Disputes'){<app-disputes [token]="s.token"/>}
           @else if(p==='Reports'){<app-reports [token]="s.token"/>}
           @else if(p==='Reminders'){<app-reminders [token]="s.token"/>}
           @else if(p==='Audit log'){<app-audit-log [token]="s.token"/>}

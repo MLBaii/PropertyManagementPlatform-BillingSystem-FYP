@@ -70,6 +70,11 @@ public class PaymentProofService : IPaymentProofService
             return PaymentProofSubmitResult.BillsNotFound();
         }
 
+        if (taggedBills.Any(bill => bill.Status == "Paid" || bill.Status == "Voided" || bill.OutstandingBalance <= 0))
+        {
+            return PaymentProofSubmitResult.BillsNotPayable();
+        }
+
         // Upload every file before creating any DB rows — if file 2 of 3 fails, we don't want
         // a partially-created submission (matches the "no partial writes" guarantee the
         // single-file version already had).
