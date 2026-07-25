@@ -26,8 +26,22 @@ public class AdminBillsController(AppDbContext context) : ControllerBase
         var units = await context.Units.Where(unit => unit.IsActive).ToListAsync(); var items = await context.BillingItems.Where(item => item.IsActive).ToListAsync();
         if (units.Count == 0) return BadRequest(new { message = "At least one active unit is required before bills can be generated." });
         if (items.Count == 0) return BadRequest(new { message = "At least one active billing item is required before bills can be generated." });
+        var additionalCharges = request.IncludeAdditionalCharges
+            ? await context.AdditionalCharges.Where(charge => charge.Status == "Pending" && charge.BillingPeriod == request.BillingPeriod).ToListAsync()
+            : [];
         var dueDateUtc = DateTime.SpecifyKind(request.DueDate.Date, DateTimeKind.Utc);
-        foreach (var unit in units) { var bill = new PropertyBill.Api.Models.Bill { UnitId=unit.UnitId,BillingPeriod=request.BillingPeriod,ReferenceNumber=$"BILL-{request.BillingPeriod}-{unit.UnitNumber.Replace("-","")}",IssueDate=DateTime.UtcNow,DueDate=dueDateUtc,Status="Unpaid",TotalAmount=items.Sum(item=>item.DefaultRate),OutstandingBalance=items.Sum(item=>item.DefaultRate) }; foreach(var item in items) bill.BillLineItems.Add(new PropertyBill.Api.Models.BillLineItem { Description=item.ChargeType,Amount=item.DefaultRate,LineItemType="Charge",BillingItemId=item.BillingItemId }); context.Bills.Add(bill); }
+        var generated = new List<(PropertyBill.Api.Models.Bill Bill, List<PropertyBill.Api.Models.AdditionalCharge> Charges)>();
+        foreach (var unit in units)
+        {
+            var unitCharges = additionalCharges.Where(charge => charge.UnitId == unit.UnitId).ToList();
+            var total = items.Sum(item => item.DefaultRate) + unitCharges.Sum(charge => charge.Amount);
+            var bill = new PropertyBill.Api.Models.Bill { UnitId=unit.UnitId,BillingPeriod=request.BillingPeriod,ReferenceNumber=$"BILL-{request.BillingPeriod}-{unit.UnitNumber.Replace("-","")}",IssueDate=DateTime.UtcNow,DueDate=dueDateUtc,Status="Unpaid",TotalAmount=total,OutstandingBalance=total };
+            foreach(var item in items) bill.BillLineItems.Add(new PropertyBill.Api.Models.BillLineItem { Description=item.ChargeType,Amount=item.DefaultRate,LineItemType="Charge",BillingItemId=item.BillingItemId });
+            foreach (var charge in unitCharges) bill.BillLineItems.Add(new PropertyBill.Api.Models.BillLineItem { Description=$"{charge.Category}: {charge.Description}", Amount=charge.Amount, LineItemType="AdditionalCharge" });
+            context.Bills.Add(bill); generated.Add((bill, unitCharges));
+        }
+        await context.SaveChangesAsync();
+        foreach (var (bill, charges) in generated) foreach (var charge in charges) { charge.Status = "Billed"; charge.BillId = bill.BillId; }
         await context.SaveChangesAsync(); return Ok(new GenerateBillsResponse { BillsGenerated = units.Count });
     }
 
