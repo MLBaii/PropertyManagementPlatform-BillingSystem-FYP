@@ -20,16 +20,18 @@ public class AdminBillsController(AppDbContext context) : ControllerBase
             return BadRequest(new { message = "Billing period must use YYYY-MM format." });
         if (billingMonth.Year < 2020 || billingMonth.Year > 2100)
             return BadRequest(new { message = "Billing period must be between January 2020 and December 2100." });
-        if (request.DueDate == default || request.DueDate.Year != billingMonth.Year || request.DueDate.Month != billingMonth.Month)
-            return BadRequest(new { message = "Due date must be within the selected billing period." });
         if (await context.Bills.AnyAsync(bill => bill.BillingPeriod == request.BillingPeriod)) return Conflict(new { message = "Bills have already been generated for this period." });
         var units = await context.Units.Where(unit => unit.IsActive).ToListAsync(); var items = await context.BillingItems.Where(item => item.IsActive).ToListAsync();
         if (units.Count == 0) return BadRequest(new { message = "At least one active unit is required before bills can be generated." });
         if (items.Count == 0) return BadRequest(new { message = "At least one active billing item is required before bills can be generated." });
+        var dueDays = items.Select(item => item.DueDay).Distinct().ToList();
+        if (dueDays.Count != 1) return BadRequest(new { message = "All active billing items must use the same due day before bills can be generated." });
         var additionalCharges = request.IncludeAdditionalCharges
             ? await context.AdditionalCharges.Where(charge => charge.Status == "Pending" && charge.BillingPeriod == request.BillingPeriod).ToListAsync()
             : [];
-        var dueDateUtc = DateTime.SpecifyKind(request.DueDate.Date, DateTimeKind.Utc);
+        var followingMonth = billingMonth.AddMonths(1);
+        var dueDay = Math.Min(dueDays[0], DateTime.DaysInMonth(followingMonth.Year, followingMonth.Month));
+        var dueDateUtc = DateTime.SpecifyKind(new DateTime(followingMonth.Year, followingMonth.Month, dueDay), DateTimeKind.Utc);
         var generated = new List<(PropertyBill.Api.Models.Bill Bill, List<PropertyBill.Api.Models.AdditionalCharge> Charges)>();
         foreach (var unit in units)
         {

@@ -11,6 +11,7 @@ public class AdminPaymentProofDto
     public string Status { get; set; } = string.Empty;
     public DateTime SubmittedAt { get; set; }
     public string? AdminRemarks { get; set; }
+    public bool HasOpenDisputes { get; set; }
     public List<AdminPaymentProofBillDto> Bills { get; set; } = new();
 }
 
