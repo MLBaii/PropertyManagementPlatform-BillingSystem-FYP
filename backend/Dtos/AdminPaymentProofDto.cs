@@ -8,11 +8,19 @@ public class AdminPaymentProofDto
     public string FileUrl { get; set; } = string.Empty;
     public string FileType { get; set; } = string.Empty;
     public int FileCount { get; set; }
+    public List<AdminPaymentProofFileDto> Files { get; set; } = new();
     public string Status { get; set; } = string.Empty;
     public DateTime SubmittedAt { get; set; }
     public string? AdminRemarks { get; set; }
     public bool HasOpenDisputes { get; set; }
     public List<AdminPaymentProofBillDto> Bills { get; set; } = new();
+}
+
+public class AdminPaymentProofFileDto
+{
+    public int ProofId { get; set; }
+    public string FileUrl { get; set; } = string.Empty;
+    public string FileType { get; set; } = string.Empty;
 }
 
 public class AdminPaymentProofBillDto
