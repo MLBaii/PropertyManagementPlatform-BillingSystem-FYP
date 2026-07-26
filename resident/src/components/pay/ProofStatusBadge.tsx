@@ -12,7 +12,7 @@ type Props = {
 
 const getStatusConfig = (colors: ThemeColors): Record<ProofStatus, { label: string; color: string; bg: string }> => ({
   Pending: { label: 'Pending', color: colors.pending, bg: colors.pendingBg },
-  Approved: { label: 'Approved', color: colors.success, bg: colors.successBg },
+  Confirmed: { label: 'Confirmed', color: colors.success, bg: colors.successBg },
   Rejected: { label: 'Rejected', color: colors.danger, bg: colors.dangerBg },
 });
 

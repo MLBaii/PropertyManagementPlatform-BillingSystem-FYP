@@ -1,7 +1,10 @@
 import { apiClient } from '@/services/api/client';
 import { PickedFile } from '@/utils/proofFilePicker';
 
-export type ProofStatus = 'Pending' | 'Approved' | 'Rejected';
+// Matches the raw PaymentProof.Status values the backend actually writes (see
+// ReviewPaymentProofRequest's "^(Confirmed|Rejected)$" validation / AdminPaymentProofsController.Review)
+// — "Confirmed", not "Approved", for consistency with Payment.Status elsewhere in this app.
+export type ProofStatus = 'Pending' | 'Confirmed' | 'Rejected';
 
 export type TaggedBill = {
   billId: number;
