@@ -3,13 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PropertyBill.Api.Data;
 using PropertyBill.Api.Dtos;
+using PropertyBill.Api.Services;
 
 namespace PropertyBill.Api.Controllers;
 
 [ApiController]
 [Authorize(Roles = "Admin,AdminManager")]
 [Route("api/admin/disputes")]
-public class AdminDisputesController(AppDbContext context) : ControllerBase
+public class AdminDisputesController(AppDbContext context, INotificationSendingService notificationSending) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AdminDisputeDto>>> Get() => Ok(await context.Disputes.AsNoTracking()
@@ -141,6 +142,14 @@ public class AdminDisputesController(AppDbContext context) : ControllerBase
         AddAudit("Review", dispute, $"Dispute for bill {dispute.Bill.ReferenceNumber} marked {request.Status}.");
 
         await context.SaveChangesAsync();
+        if (request.Status is "Resolved" or "Rejected")
+        {
+            var title = request.Status == "Resolved" ? "Dispute resolved" : "Dispute reviewed";
+            var body = request.Status == "Resolved"
+                ? $"Your dispute for bill {dispute.Bill.ReferenceNumber} has been resolved. {dispute.AdminResponse}"
+                : $"Your dispute for bill {dispute.Bill.ReferenceNumber} has been reviewed. {dispute.AdminResponse}";
+            await notificationSending.SendAsync(dispute.ResidentId, "DisputeResolved", title, body, "/(tabs)/disputes");
+        }
         return NoContent();
     }
 
