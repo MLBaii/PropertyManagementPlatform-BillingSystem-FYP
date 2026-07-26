@@ -72,3 +72,9 @@ body{margin:0}
 .theme-light button:not(.theme-toggle):not(.logout):not(.outline):not(.void):not(.cancel):not(.toggle):not(.bill-link){background:#dc805e!important;color:#241815!important}
 .theme-light .outline,.theme-light .logout,.theme-light .void,.theme-light .cancel,.theme-light .toggle{background:transparent!important;border-color:#755546!important;color:#f0b39d!important}
 .theme-light th,.theme-light td,.theme-light .age-row,.theme-light .activity{border-color:#4a3b34!important;color:#ead9d2!important}.theme-light .track{background:#171210!important}.theme-light .unit-row{background:#211b18!important;border-color:#4a3b34!important}.theme-light .profile span{border-color:#dc805e!important;color:#f4a083!important}.theme-light .brand b span{color:#dc805e!important}.theme-light .theme-toggle{border-color:#755546!important;color:#ffd7c6!important}
+
+/* A soft blue fade keeps the dark login page consistent with the warm light-theme login. */
+.login.theme-dark{background:radial-gradient(ellipse 70% 90% at 0% 42%,#253f6b 0%,#172643 42%,#0d111b 78%)!important}.login.theme-dark section{box-shadow:0 20px 60px #0008,0 0 70px #367bf21c!important}
+
+/* Keep the theme control and account identity aligned regardless of username length. */
+.content header .header-actions{display:flex;align-items:center;gap:16px;min-height:40px}.content header .theme-toggle{position:static;flex:0 0 auto}.content header .profile{height:40px;gap:10px}.content header .profile span{box-sizing:border-box;width:40px;height:40px;flex:0 0 40px}.content header .profile b{min-width:58px;line-height:40px}@media(max-width:560px){.content header .header-actions{gap:10px}.content header .profile b{display:none}}

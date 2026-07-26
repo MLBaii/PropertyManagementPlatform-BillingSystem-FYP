@@ -5,7 +5,7 @@ using PropertyBill.Api.Data;
 using PropertyBill.Api.Dtos;
 namespace PropertyBill.Api.Controllers;
 [ApiController]
-[Authorize(Roles="Admin")]
+[Authorize(Roles="Admin,AdminManager")]
 [Route("api/admin/audit-log")]
 public class AdminAuditLogController(AppDbContext context):ControllerBase
 {

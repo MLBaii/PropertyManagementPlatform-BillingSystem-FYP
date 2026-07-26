@@ -7,7 +7,7 @@ using PropertyBill.Api.Dtos;
 namespace PropertyBill.Api.Controllers;
 
 [ApiController]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,AdminManager")]
 [Route("api/admin/dashboard")]
 public class AdminDashboardController(AppDbContext context) : ControllerBase
 {

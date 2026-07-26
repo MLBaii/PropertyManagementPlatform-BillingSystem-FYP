@@ -6,7 +6,7 @@ using PropertyBill.Api.Data;
 using PropertyBill.Api.Dtos;
 namespace PropertyBill.Api.Controllers;
 [ApiController]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,AdminManager")]
 [Route("api/admin/bills")]
 public class AdminBillsController(AppDbContext context) : ControllerBase
 {
