@@ -6,7 +6,7 @@ using PropertyBill.Api.Dtos;
 using PropertyBill.Api.Services;
 namespace PropertyBill.Api.Controllers;
 [ApiController]
-[Authorize(Roles="Admin")]
+[Authorize(Roles="Admin,AdminManager")]
 [Route("api/admin/reminders")]
 public class AdminRemindersController(AppDbContext context, INotificationSendingService notifications):ControllerBase
 {

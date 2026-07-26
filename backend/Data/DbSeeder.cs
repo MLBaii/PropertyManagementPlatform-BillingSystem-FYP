@@ -12,7 +12,7 @@ public static class DbSeeder
     {
         if (await context.Properties.AnyAsync())
         {
-            await EnsureAdminUserAsync(context);
+            await EnsureAdminUsersAsync(context);
             return;
         }
 
@@ -125,13 +125,15 @@ public static class DbSeeder
         context.Payments.Add(mayPayment);
 
         await context.SaveChangesAsync();
-        await EnsureAdminUserAsync(context);
+        await EnsureAdminUsersAsync(context);
     }
 
-    private static async Task EnsureAdminUserAsync(AppDbContext context)
+    public static async Task EnsureAdminUsersAsync(AppDbContext context)
     {
-        if (await context.AdminUsers.AnyAsync(user => user.Username == "admin")) return;
-        context.AdminUsers.Add(new AdminUser { Username = "admin", Email = "admin@skyview.my", PasswordHash = BCrypt.Net.BCrypt.HashPassword(TestPassword), Role = "Admin" });
+        if (!await context.AdminUsers.AnyAsync(user => user.Username == "admin"))
+            context.AdminUsers.Add(new AdminUser { Username = "admin", Email = "admin@skyview.my", PasswordHash = BCrypt.Net.BCrypt.HashPassword(TestPassword), Role = "Admin" });
+        if (!await context.AdminUsers.AnyAsync(user => user.Username == "manager"))
+            context.AdminUsers.Add(new AdminUser { Username = "manager", Email = "manager@skyview.my", PasswordHash = BCrypt.Net.BCrypt.HashPassword(TestPassword), Role = "AdminManager" });
         await context.SaveChangesAsync();
     }
 

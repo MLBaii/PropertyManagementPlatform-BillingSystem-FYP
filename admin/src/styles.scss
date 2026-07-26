@@ -17,7 +17,7 @@ body{margin:0}
 .theme-dark .panel,.theme-dark .run-panel,.theme-dark .dashboard-card,.theme-dark .metric,.theme-dark .metrics article{background:#251f1b!important;border-color:#513d34!important}
 .theme-dark .item-form,.theme-dark .unit-form,.theme-dark .form{background:#211b18!important;border-color:#513d34!important}
 .theme-dark input,.theme-dark select,.theme-dark .toolbar input,.theme-dark .toolbar select,.theme-dark .review input,.theme-dark .review select{background:#211b18!important;border-color:#514139!important;color:#fff7f3!important}
-.theme-dark button:not(.theme-toggle):not(.logout):not(.outline):not(.void):not(.cancel):not(.toggle){background:#dc805e!important;color:#241815!important}
+.theme-dark button:not(.theme-toggle):not(.logout):not(.outline):not(.void):not(.cancel):not(.toggle):not(.bill-link){background:#dc805e!important;color:#241815!important}
 .theme-dark .outline,.theme-dark .logout,.theme-dark .void,.theme-dark .cancel,.theme-dark .toggle{background:transparent!important;border-color:#755546!important;color:#f0b39d!important}
 .theme-dark th,.theme-dark td,.theme-dark .age-row,.theme-dark .activity{border-color:#4a3b34!important;color:#ead9d2!important}
 .theme-dark .track{background:#171210!important}
@@ -36,7 +36,7 @@ body{margin:0}
 .theme-light .panel,.theme-light .run-panel,.theme-light .dashboard-card,.theme-light .metric,.theme-light .metrics article{background:#fffdfb!important;border-color:#e4d5cd!important}
 .theme-light .item-form,.theme-light .unit-form,.theme-light .form{background:#fff7f3!important;border-color:#ead9d1!important}
 .theme-light input,.theme-light select,.theme-light .toolbar input,.theme-light .toolbar select,.theme-light .review input,.theme-light .review select{background:#fff!important;border-color:#cdb9ae!important;color:#2d211c!important}
-.theme-light button:not(.theme-toggle):not(.logout):not(.outline):not(.void):not(.cancel):not(.toggle){background:#d97554!important;color:#fff!important}
+.theme-light button:not(.theme-toggle):not(.logout):not(.outline):not(.void):not(.cancel):not(.toggle):not(.bill-link){background:#d97554!important;color:#fff!important}
 .theme-light .outline,.theme-light .logout,.theme-light .void,.theme-light .cancel,.theme-light .toggle{background:transparent!important;border-color:#bb8b79!important;color:#9a432c!important}
 .theme-light th,.theme-light td,.theme-light .age-row,.theme-light .activity{border-color:#eadbd4!important;color:#3a2b25!important}
 .theme-light .track{background:#f2e6e0!important}
@@ -56,7 +56,7 @@ body{margin:0}
 .theme-dark .panel,.theme-dark .run-panel,.theme-dark .dashboard-card,.theme-dark .metric,.theme-dark .metrics article{background:#171e2d!important;border-color:#2a3854!important}
 .theme-dark .item-form,.theme-dark .unit-form,.theme-dark .form{background:#121927!important;border-color:#2a3854!important}
 .theme-dark input,.theme-dark select,.theme-dark .toolbar input,.theme-dark .toolbar select,.theme-dark .review input,.theme-dark .review select{background:#101624!important;border-color:#34435e!important;color:#eef4ff!important}
-.theme-dark button:not(.theme-toggle):not(.logout):not(.outline):not(.void):not(.cancel):not(.toggle){background:#347cf2!important;color:#fff!important}
+.theme-dark button:not(.theme-toggle):not(.logout):not(.outline):not(.void):not(.cancel):not(.toggle):not(.bill-link){background:#347cf2!important;color:#fff!important}
 .theme-dark .outline,.theme-dark .logout,.theme-dark .void,.theme-dark .cancel,.theme-dark .toggle{background:transparent!important;border-color:#3a4b67!important;color:#a9c5f7!important}
 .theme-dark th,.theme-dark td,.theme-dark .age-row,.theme-dark .activity{border-color:#2a364c!important;color:#cbd6e7!important}.theme-dark .track{background:#101624!important}.theme-dark .unit-row{background:#111724!important;border-color:#26324a!important}.theme-dark .profile span{border-color:#3e86ff!important;color:#65a0ff!important}.theme-dark .brand b span{color:#4a91ff!important}.theme-dark .theme-toggle{border-color:#3a4b67!important;color:#a9c5f7!important}
 
@@ -69,6 +69,12 @@ body{margin:0}
 .theme-light .panel,.theme-light .run-panel,.theme-light .dashboard-card,.theme-light .metric,.theme-light .metrics article{background:#251f1b!important;border-color:#513d34!important}
 .theme-light .item-form,.theme-light .unit-form,.theme-light .form{background:#211b18!important;border-color:#513d34!important}
 .theme-light input,.theme-light select,.theme-light .toolbar input,.theme-light .toolbar select,.theme-light .review input,.theme-light .review select{background:#211b18!important;border-color:#514139!important;color:#fff7f3!important}
-.theme-light button:not(.theme-toggle):not(.logout):not(.outline):not(.void):not(.cancel):not(.toggle){background:#dc805e!important;color:#241815!important}
+.theme-light button:not(.theme-toggle):not(.logout):not(.outline):not(.void):not(.cancel):not(.toggle):not(.bill-link){background:#dc805e!important;color:#241815!important}
 .theme-light .outline,.theme-light .logout,.theme-light .void,.theme-light .cancel,.theme-light .toggle{background:transparent!important;border-color:#755546!important;color:#f0b39d!important}
 .theme-light th,.theme-light td,.theme-light .age-row,.theme-light .activity{border-color:#4a3b34!important;color:#ead9d2!important}.theme-light .track{background:#171210!important}.theme-light .unit-row{background:#211b18!important;border-color:#4a3b34!important}.theme-light .profile span{border-color:#dc805e!important;color:#f4a083!important}.theme-light .brand b span{color:#dc805e!important}.theme-light .theme-toggle{border-color:#755546!important;color:#ffd7c6!important}
+
+/* A soft blue fade keeps the dark login page consistent with the warm light-theme login. */
+.login.theme-dark{background:radial-gradient(ellipse 70% 90% at 0% 42%,#253f6b 0%,#172643 42%,#0d111b 78%)!important}.login.theme-dark section{box-shadow:0 20px 60px #0008,0 0 70px #367bf21c!important}
+
+/* Keep the theme control and account identity aligned regardless of username length. */
+.content header .header-actions{display:flex;align-items:center;gap:16px;min-height:40px}.content header .theme-toggle{position:static;flex:0 0 auto}.content header .profile{height:40px;gap:10px}.content header .profile span{box-sizing:border-box;width:40px;height:40px;flex:0 0 40px}.content header .profile b{min-width:58px;line-height:40px}@media(max-width:560px){.content header .header-actions{gap:10px}.content header .profile b{display:none}}

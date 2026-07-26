@@ -116,6 +116,7 @@ if (app.Environment.IsDevelopment())
     using var migrationScope = app.Services.CreateScope();
     var migrationContext = migrationScope.ServiceProvider.GetRequiredService<AppDbContext>();
     await migrationContext.Database.MigrateAsync();
+    await DbSeeder.EnsureAdminUsersAsync(migrationContext);
 }
 
 if (args.Contains("--seed") || args.Contains("--reseed"))

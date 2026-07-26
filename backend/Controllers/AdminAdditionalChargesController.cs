@@ -9,7 +9,7 @@ using PropertyBill.Api.Models;
 namespace PropertyBill.Api.Controllers;
 
 [ApiController]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,AdminManager")]
 [Route("api/admin/additional-charges")]
 public class AdminAdditionalChargesController(AppDbContext context) : ControllerBase
 {
